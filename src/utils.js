@@ -24,8 +24,6 @@ function defaultOptions(endpointPath) {
   };
 }
 
-// TODO: This will be smarter. See
-// https://github.com/NebulousLabs/skynet-docs/issues/21.
 /**
  * Selects the default portal URL to use when initializing a client. May involve network queries to several candidate portals.
  */
