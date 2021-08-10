@@ -1,8 +1,8 @@
 {
-  "name": "@nebulous/skynet",
+  "name": "@skynetlabs/skynet-nodejs",
   "version": "2.0.1",
   "description": "Skynet SDK",
-  "repository": "https://github.com/NebulousLabs/nodejs-skynet",
+  "repository": "https://github.com/SkynetLabs/nodejs-skynet",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -24,6 +24,9 @@
     "Sia"
   ],
   "author": "Peter-Jan Brone",
+  "publishConfig": {
+    "access": "public"
+  },
   "contributors": [
     {
       "name": "Kunal Kamble",
