@@ -1,9 +1,9 @@
 # Skynet NodeJS SDK
 
-[![Version](https://img.shields.io/github/package-json/v/NebulousLabs/nodejs-skynet)](https://www.npmjs.com/package/@nebulous/skynet)
-[![Build Status](https://img.shields.io/github/workflow/status/NebulousLabs/nodejs-skynet/Pull%20Request)](https://github.com/NebulousLabs/nodejs-skynet/actions)
-[![Contributors](https://img.shields.io/github/contributors/NebulousLabs/nodejs-skynet)](https://github.com/NebulousLabs/nodejs-skynet/graphs/contributors)
-[![License](https://img.shields.io/github/license/NebulousLabs/nodejs-skynet)](https://github.com/NebulousLabs/nodejs-skynet)
+[![Version](https://img.shields.io/github/package-json/v/SkynetLabs/nodejs-skynet)](https://www.npmjs.com/package/@skynetlabs/skynet-nodejs)
+[![Build Status](https://img.shields.io/github/workflow/status/SkynetLabs/nodejs-skynet/Pull%20Request)](https://github.com/SkynetLabs/nodejs-skynet/actions)
+[![Contributors](https://img.shields.io/github/contributors/SkynetLabs/nodejs-skynet)](https://github.com/SkynetLabs/nodejs-skynet/graphs/contributors)
+[![License](https://img.shields.io/github/license/SkynetLabs/nodejs-skynet)](https://github.com/SkynetLabs/nodejs-skynet)
 
 An SDK for integrating Skynet into Node.js applications.
 
@@ -12,13 +12,13 @@ An SDK for integrating Skynet into Node.js applications.
 Using `npm`:
 
 ```sh
-npm install @nebulous/skynet
+npm install @skynetlabs/skynet-nodejs
 ```
 
 Using `yarn`:
 
 ```sh
-yarn add @nebulous/skynet
+yarn add @skynetlabs/skynet-nodejs
 ```
 
 ## Documentation
