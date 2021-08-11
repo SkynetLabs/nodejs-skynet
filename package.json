@@ -6,15 +6,16 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "format": "prettier --write ."
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "format": "prettier --write .",
+    "prepublishOnly": "yarn build",
+    "prepare": "husky install"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,md}": [
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --ext .ts --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{json,yml,md}": [
       "prettier --write"
     ]
   },
