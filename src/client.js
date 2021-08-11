@@ -27,7 +27,12 @@ class SkynetClient {
    * @param {Object} config - Configuration for the request. See docs for constructor for the full list of options.
    */
   executeRequest(config) {
-    const url = makeUrl(config.portalUrl, config.endpointPath, config.extraPath ? config.extraPath : "");
+    let url;
+    if (config.url) {
+      url = config.url;
+    } else {
+      url = makeUrl(config.portalUrl, config.endpointPath, config.extraPath ? config.extraPath : "");
+    }
 
     if (!config.headers) {
       config.headers = {};
