@@ -6,7 +6,7 @@ const p = require("path");
 
 const { Upload } = require("tus-js-client");
 
-const { SkynetClient } = require("./client");
+const { buildRequestHeaders, SkynetClient } = require("./client");
 const { defaultOptions, getFileMimeType, makeUrl, walkDirectory, uriSkynetPrefix } = require("./utils");
 
 /**
@@ -67,7 +67,9 @@ async function uploadSmallFile(client, path, filename, opts) {
 
 async function uploadLargeFile(client, path, filename, filesize, opts) {
   const url = makeUrl(opts.portalUrl, opts.endpointLargeUpload);
-  const headers = {};
+
+  // Build headers.
+  const headers = buildRequestHeaders({}, opts.customUserAgent, opts.customCookie);
 
   return new Promise((resolve, reject) => {
     const tusOpts = {
@@ -147,11 +149,11 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
   if (opts.dryRun) params.dryrun = true;
 
   const response = await this.executeRequest({
-      ...opts,
-      method: "post",
-      data: formData,
-      headers: formData.getHeaders(),
-      params: params,
+    ...opts,
+    method: "post",
+    data: formData,
+    headers: formData.getHeaders(),
+    params: params,
   });
 
   return `${uriSkynetPrefix}${response.data.skylink}`;
