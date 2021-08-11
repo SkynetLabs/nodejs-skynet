@@ -18,7 +18,7 @@ const TUS_CHUNK_SIZE = (1 << 22) * 10;
  * The retry delays, in ms. Data is stored in skyd for up to 20 minutes, so the
  * total delays should not exceed that length of time.
  */
-const DEFAULT_TUS_RETRY_DELAYS = [0, 5_000, 15_000, 60_000, 300_000, 600_000];
+const DEFAULT_TUS_RETRY_DELAYS = [0, 5000, 15000, 60000, 300000, 600000];
 
 const defaultUploadOptions = {
   ...defaultOptions("/skynet/skyfile"),
