@@ -36,14 +36,14 @@ const defaultUploadOptions = {
 SkynetClient.prototype.uploadFile = async function (path, customOptions = {}) {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
 
-  const sizeInBytes = fs.statSync(path).size;
+  const stat = await fs.promises.stat(path);
+  const sizeInBytes = stat.size;
   const filename = opts.customFilename ? opts.customFilename : p.basename(path);
 
   if (sizeInBytes < opts.largeFileSize) {
     return await uploadSmallFile(this, path, filename, opts);
-  } else {
-    return await uploadLargeFile(this, path, filename, sizeInBytes, opts);
   }
+  return await uploadLargeFile(this, path, filename, sizeInBytes, opts);
 };
 
 async function uploadSmallFile(client, path, filename, opts) {
@@ -116,7 +116,7 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
 
   // Check if there is a directory at given path.
-  const stat = fs.statSync(path);
+  const stat = await fs.promises.stat(path);
   if (!stat.isDirectory()) {
     throw new Error(`Given path is not a directory: ${path}`);
   }

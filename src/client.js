@@ -28,10 +28,8 @@ class SkynetClient {
    * @param {Object} config - Configuration for the request. See docs for constructor for the full list of options.
    */
   executeRequest(config) {
-    let url;
-    if (config.url) {
-      url = config.url;
-    } else {
+    let url = config.url;
+    if (!url) {
       url = makeUrl(config.portalUrl, config.endpointPath, config.extraPath ? config.extraPath : "");
     }
 
@@ -67,18 +65,16 @@ class SkynetClient {
  * @param [customCookie] - A custom cookie.
  * @returns - The built headers.
  */
-function buildRequestHeaders(headers, customUserAgent, customCookie) {
-  if (!headers) {
-    headers = {};
-  }
+function buildRequestHeaders(baseHeaders, customUserAgent, customCookie) {
+  const returnHeaders = { ...baseHeaders };
   // Set some headers from common options.
   if (customUserAgent) {
-    headers["User-Agent"] = customUserAgent;
+    returnHeaders["User-Agent"] = customUserAgent;
   }
   if (customCookie) {
-    headers["Cookie"] = customCookie;
+    returnHeaders["Cookie"] = customCookie;
   }
-  return headers;
+  return returnHeaders;
 }
 
 module.exports = { SkynetClient, buildRequestHeaders };

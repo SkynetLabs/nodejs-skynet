@@ -40,7 +40,7 @@ function defaultPortalUrl() {
  * @returns - The mime type.
  */
 function getFileMimeType(filename) {
-  let { ext } = path.parse(filename);
+  let ext = path.extname(filename);
   ext = trimPrefix(ext, ".");
   if (ext !== "") {
     const mimeType = mime.getType(ext);
