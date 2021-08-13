@@ -18,8 +18,8 @@ describe("uploadFile", () => {
     axios.mockResolvedValue({ data: { skylink } });
   });
 
-  it("should send post request to default portal", () => {
-    client.uploadFile(filename);
+  it("should send post request to default portal", async () => {
+    await client.uploadFile(filename);
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -37,8 +37,8 @@ describe("uploadFile", () => {
     );
   });
 
-  it("should use custom upload options if defined", () => {
-    client.uploadFile(filename, {
+  it("should use custom upload options if defined", async () => {
+    await client.uploadFile(filename, {
       portalUrl: "https://localhost",
       endpointPath: "/skynet/file",
       portalFileFieldname: "filetest",
@@ -60,10 +60,10 @@ describe("uploadFile", () => {
     );
   });
 
-  it("should use custom connection options if defined on the client", () => {
+  it("should use custom connection options if defined on the client", async () => {
     const client = new SkynetClient("", { APIKey: "foobar", customUserAgent: "Sia-Agent" });
 
-    client.uploadFile(filename);
+    await client.uploadFile(filename);
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -80,10 +80,10 @@ describe("uploadFile", () => {
     );
   });
 
-  it("should use custom connection options if defined on the API call", () => {
+  it("should use custom connection options if defined on the API call", async () => {
     const client = new SkynetClient("", { APIKey: "foobar", customUserAgent: "Sia-Agent" });
 
-    client.uploadFile(filename, { APIKey: "barfoo", customUserAgent: "Sia-Agent-2" });
+    await client.uploadFile(filename, { APIKey: "barfoo", customUserAgent: "Sia-Agent-2" });
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -130,8 +130,8 @@ describe("uploadDirectory", () => {
     axios.mockResolvedValue({ data: { skylink } });
   });
 
-  it("should send post request to default portal", () => {
-    client.uploadDirectory(dirname);
+  it("should send post request to default portal", async () => {
+    await client.uploadDirectory(dirname);
 
     for (const file of directory) {
       expect(axios).toHaveBeenCalledWith(
@@ -149,8 +149,8 @@ describe("uploadDirectory", () => {
     }
   });
 
-  it("should use custom options if defined", () => {
-    client.uploadDirectory(dirname, {
+  it("should use custom options if defined", async () => {
+    await client.uploadDirectory(dirname, {
       portalUrl: "http://localhost",
       endpointPath: "/skynet/file",
       portalDirectoryFileFieldname: "filetest",

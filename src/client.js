@@ -10,6 +10,7 @@ class SkynetClient {
    * @param {Object} [customOptions={}] - Configuration for the client.
    * @param {string} [customOptions.method] - HTTP method to use.
    * @param {string} [customOptions.APIKey] - Authentication password to use.
+   * @param {string} [customCookie=""] - Custom cookie header to set.
    * @param {string} [customOptions.customUserAgent=""] - Custom user agent header to set.
    * @param {Object} [customOptions.data=null] - Data to send in a POST.
    * @param {string} [customOptions.endpointPath=""] - The relative URL path of the portal endpoint to contact.
@@ -27,21 +28,20 @@ class SkynetClient {
    * @param {Object} config - Configuration for the request. See docs for constructor for the full list of options.
    */
   executeRequest(config) {
-    const url = makeUrl(config.portalUrl, config.endpointPath, config.extraPath ? config.extraPath : "");
+    let url = config.url;
+    if (!url) {
+      url = makeUrl(config.portalUrl, config.endpointPath, config.extraPath ? config.extraPath : "");
+    }
 
-    if (!config.headers) {
-      config.headers = {};
-    }
-    if (config.customUserAgent) {
-      config.headers["User-Agent"] = config.customUserAgent;
-    }
+    // Build headers.
+    const headers = buildRequestHeaders(config.headers, config.customUserAgent, config.customCookie);
 
     return axios({
-      url: url,
+      url,
       method: config.method,
       data: config.data,
       params: config.params,
-      headers: config.headers,
+      headers,
       auth: config.APIKey && { username: "", password: config.APIKey },
       responseType: config.responseType,
       onUploadProgress:
@@ -57,7 +57,27 @@ class SkynetClient {
   }
 }
 
-module.exports = { SkynetClient };
+/**
+ * Helper function that builds the request headers.
+ *
+ * @param [headers] - Any base headers.
+ * @param [customUserAgent] - A custom user agent to set.
+ * @param [customCookie] - A custom cookie.
+ * @returns - The built headers.
+ */
+function buildRequestHeaders(baseHeaders, customUserAgent, customCookie) {
+  const returnHeaders = { ...baseHeaders };
+  // Set some headers from common options.
+  if (customUserAgent) {
+    returnHeaders["User-Agent"] = customUserAgent;
+  }
+  if (customCookie) {
+    returnHeaders["Cookie"] = customCookie;
+  }
+  return returnHeaders;
+}
+
+module.exports = { SkynetClient, buildRequestHeaders };
 
 // Get the following files to run or the client's methods won't be defined.
 require("./download.js");

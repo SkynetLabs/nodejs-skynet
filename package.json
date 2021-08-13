@@ -6,15 +6,18 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "format": "prettier --write ."
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "format": "prettier --write .",
+    "lint": "yarn lint:eslint",
+    "lint:eslint": "eslint . --max-warnings 0",
+    "prepublishOnly": "yarn build",
+    "prepare": "husky install"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,md}": [
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{json,yml,md}": [
       "prettier --write"
     ]
   },
@@ -38,12 +41,14 @@
   "dependencies": {
     "axios": "0.21.1",
     "form-data": "4.0.0",
+    "mime": "^2.5.2",
+    "tus-js-client": "^2.3.0",
     "url-join": "^4.0.1"
   },
   "devDependencies": {
     "eslint": "^7.2.0",
-    "jest": "^27.0.6",
     "husky": "^7.0.1",
+    "jest": "^27.0.6",
     "lint-staged": "^11.1.2",
     "prettier": "^2.0.5",
     "tmp": "0.2.1"

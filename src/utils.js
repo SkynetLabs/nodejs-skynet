@@ -2,6 +2,8 @@
 
 const path = require("path");
 const fs = require("fs");
+
+const mime = require("mime/lite");
 const urljoin = require("url-join");
 
 /**
@@ -32,6 +34,24 @@ function defaultPortalUrl() {
 }
 
 /**
+ * Get the file mime type. Try to guess the file type based on the extension.
+ *
+ * @param filename - The filename.
+ * @returns - The mime type.
+ */
+function getFileMimeType(filename) {
+  let ext = path.extname(filename);
+  ext = trimPrefix(ext, ".");
+  if (ext !== "") {
+    const mimeType = mime.getType(ext);
+    if (mimeType) {
+      return mimeType;
+    }
+  }
+  return "";
+}
+
+/**
  * Properly joins paths together to create a URL. Takes a variable number of
  * arguments.
  */
@@ -40,6 +60,31 @@ function makeUrl() {
   return args.reduce(function (acc, cur) {
     return urljoin(acc, cur);
   });
+}
+
+/**
+ * Removes a prefix from the beginning of the string.
+ *
+ * @param str - The string to process.
+ * @param prefix - The prefix to remove.
+ * @param [limit] - Maximum amount of times to trim. No limit by default.
+ * @returns - The processed string.
+ */
+function trimPrefix(str, prefix, limit) {
+  if (typeof limit !== "number" && typeof limit !== "undefined") {
+    throw new Error(`Invalid input: 'limit' must be type 'number | undefined', was '${typeof limit}'`);
+  }
+
+  while (str.startsWith(prefix)) {
+    if (limit !== undefined && limit <= 0) {
+      break;
+    }
+    str = str.slice(prefix.length);
+    if (limit) {
+      limit -= 1;
+    }
+  }
+  return str;
 }
 
 function walkDirectory(filepath, out) {
@@ -60,18 +105,16 @@ function walkDirectory(filepath, out) {
 }
 
 function trimSiaPrefix(str) {
-  if (str.startsWith(uriSkynetPrefix)) {
-    return str.slice(uriSkynetPrefix.length);
-  }
-  return str;
+  return trimPrefix(str, uriSkynetPrefix);
 }
 
 module.exports = {
   defaultOptions,
   defaultPortalUrl,
   defaultSkynetPortalUrl,
+  getFileMimeType,
   makeUrl,
+  trimSiaPrefix,
   uriSkynetPrefix,
   walkDirectory,
-  trimSiaPrefix,
 };
