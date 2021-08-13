@@ -71,6 +71,10 @@ function makeUrl() {
  * @returns - The processed string.
  */
 function trimPrefix(str, prefix, limit) {
+  if (typeof limit !== "number" && typeof limit !== "undefined") {
+    throw new Error(`Invalid input: 'limit' must be type 'number | undefined', was '${typeof limit}'`);
+  }
+
   while (str.startsWith(prefix)) {
     if (limit !== undefined && limit <= 0) {
       break;
