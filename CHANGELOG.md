@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0]
+
+### Added
+
+- Added tus protocol to `uploadFile` for large, resumable file uploads.
+- Added ability to set custom cookies.
+
 ## [2.0.1]
 
 ### Changed
