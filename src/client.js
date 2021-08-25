@@ -19,6 +19,10 @@ class SkynetClient {
    * @param {Object} [customOptions.params={}] - Query parameters to include in the URl.
    */
   constructor(portalUrl = defaultPortalUrl(), customOptions = {}) {
+    if (portalUrl === "") {
+      // Portal was not given, use the default portal URL.
+      portalUrl = defaultPortalUrl();
+    }
     this.customOptions = { ...customOptions, portalUrl };
   }
 
