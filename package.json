@@ -9,7 +9,6 @@
     "format": "prettier --write .",
     "lint": "yarn lint:eslint",
     "lint:eslint": "eslint . --max-warnings 0",
-    "prepublishOnly": "yarn build",
     "prepare": "husky install"
   },
   "lint-staged": {

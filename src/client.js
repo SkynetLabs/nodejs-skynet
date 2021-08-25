@@ -19,8 +19,7 @@ class SkynetClient {
    * @param {Object} [customOptions.params={}] - Query parameters to include in the URl.
    */
   constructor(portalUrl = defaultPortalUrl(), customOptions = {}) {
-    this.portalUrl = portalUrl;
-    this.customOptions = customOptions;
+    this.customOptions = { ...customOptions, portalUrl };
   }
 
   /**
@@ -60,7 +59,7 @@ class SkynetClient {
 /**
  * Helper function that builds the request headers.
  *
- * @param [headers] - Any base headers.
+ * @param [baseHeaders] - Any base headers.
  * @param [customUserAgent] - A custom user agent to set.
  * @param [customCookie] - A custom cookie.
  * @returns - The built headers.
