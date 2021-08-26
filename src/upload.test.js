@@ -177,6 +177,34 @@ describe("uploadDirectory", () => {
     }
   });
 
+  it("should set errorpages if defined", async () => {
+    const errorPages = { 404: "404.html", 500: "500.html" };
+
+    await client.uploadDirectory(dirname, { errorPages });
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({
+          errorpages: JSON.stringify(errorPages),
+        }),
+      })
+    );
+  });
+
+  it("should set tryfiles if defined", async () => {
+    const tryFiles = ["foo", "bar"];
+
+    await client.uploadDirectory(dirname, { tryFiles });
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({
+          tryfiles: JSON.stringify(tryFiles),
+        }),
+      })
+    );
+  });
+
   it("should return single skylink on success", async () => {
     const data = await client.uploadDirectory(dirname);
 

@@ -29,8 +29,10 @@ const defaultUploadOptions = {
   customFilename: "",
   customDirname: "",
   dryRun: false,
+  errorPages: undefined,
   largeFileSize: TUS_CHUNK_SIZE,
   retryDelays: DEFAULT_TUS_RETRY_DELAYS,
+  tryFiles: undefined,
 };
 
 SkynetClient.prototype.uploadFile = async function (path, customOptions = {}) {
@@ -145,6 +147,12 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
     filename = filename.slice(1);
   }
   const params = { filename };
+  if (opts.tryFiles) {
+    params.tryfiles = JSON.stringify(opts.tryFiles);
+  }
+  if (opts.errorPages) {
+    params.errorpages = JSON.stringify(opts.errorPages);
+  }
 
   if (opts.dryRun) params.dryrun = true;
 
@@ -153,7 +161,7 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
     method: "post",
     data: formData,
     headers: formData.getHeaders(),
-    params: params,
+    params,
   });
 
   return `${uriSkynetPrefix}${response.data.skylink}`;
