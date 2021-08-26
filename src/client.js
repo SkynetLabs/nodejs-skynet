@@ -25,7 +25,7 @@ class SkynetClient {
       );
     }
 
-    this.customOptions = customOptions;
+    this.customOptions = { ...customOptions };
     // If portal was not given, the default portal URL will be used.
     if (portalUrl) {
       // Set the portalUrl if given.
