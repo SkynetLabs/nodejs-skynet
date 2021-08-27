@@ -37,6 +37,28 @@ describe("uploadFile", () => {
     );
   });
 
+  it("should send post request to client portal", async () => {
+    const newPortalUrl = "https://siasky.net";
+    const client = new SkynetClient(newPortalUrl);
+
+    await client.uploadFile(filename);
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: `${newPortalUrl}/skynet/skyfile`,
+        data: expect.objectContaining({
+          _streams: expect.arrayContaining([
+            expect.stringContaining(
+              'Content-Disposition: form-data; name="file"; filename="file1.txt"\r\nContent-Type: text/plain'
+            ),
+          ]),
+        }),
+        headers: expect.objectContaining({ "content-type": expect.stringContaining("multipart/form-data") }),
+        params: expect.anything(),
+      })
+    );
+  });
+
   it("should use custom upload options if defined", async () => {
     await client.uploadFile(filename, {
       portalUrl: "https://localhost",
@@ -137,6 +159,28 @@ describe("uploadDirectory", () => {
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
           url: `${portalUrl}/skynet/skyfile`,
+          data: expect.objectContaining({
+            _streams: expect.arrayContaining([
+              expect.stringContaining(`Content-Disposition: form-data; name="files[]"; filename="${file}"`),
+            ]),
+          }),
+          headers: expect.anything(),
+          params: { filename: dirname },
+        })
+      );
+    }
+  });
+
+  it("should send post request to client portal", async () => {
+    const newPortalUrl = "https://siasky.xyz";
+    const client = new SkynetClient(newPortalUrl);
+
+    await client.uploadDirectory(dirname);
+
+    for (const file of directory) {
+      expect(axios).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: `${newPortalUrl}/skynet/skyfile`,
           data: expect.objectContaining({
             _streams: expect.arrayContaining([
               expect.stringContaining(`Content-Disposition: form-data; name="files[]"; filename="${file}"`),

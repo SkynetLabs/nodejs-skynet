@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const { defaultPortalUrl, makeUrl } = require("./utils.js");
+const { makeUrl } = require("./utils.js");
 
 class SkynetClient {
   /**
@@ -18,9 +18,19 @@ class SkynetClient {
    * @param {Function} [customOptions.onUploadProgress] - Optional callback to track progress.
    * @param {Object} [customOptions.params={}] - Query parameters to include in the URl.
    */
-  constructor(portalUrl = defaultPortalUrl(), customOptions = {}) {
-    this.portalUrl = portalUrl;
-    this.customOptions = customOptions;
+  constructor(portalUrl, customOptions = {}) {
+    if (portalUrl && customOptions.portalUrl) {
+      throw new Error(
+        "Both 'portalUrl' parameter provided and 'customOptions.portalUrl' provided. Please pass only one in order to avoid conflicts."
+      );
+    }
+
+    this.customOptions = { ...customOptions };
+    // If portal was not given, the default portal URL will be used.
+    if (portalUrl) {
+      // Set the portalUrl if given.
+      this.customOptions.portalUrl = portalUrl;
+    }
   }
 
   /**
@@ -60,7 +70,7 @@ class SkynetClient {
 /**
  * Helper function that builds the request headers.
  *
- * @param [headers] - Any base headers.
+ * @param [baseHeaders] - Any base headers.
  * @param [customUserAgent] - A custom user agent to set.
  * @param [customCookie] - A custom cookie.
  * @returns - The built headers.
