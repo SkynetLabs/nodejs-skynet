@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.0]
+
+### Added
+
+- Added `errorPages` and `tryFiles` options when uploading directories
+
+### Changed
+
+- Fixed custom client portal URL being ignored
+
 ## [2.1.0]
 
 ### Added
