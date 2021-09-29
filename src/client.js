@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { SkynetClient: BrowserSkynetClient } = require("skynet-js");
 
 const { makeUrl } = require("./utils.js");
 
@@ -19,11 +20,15 @@ class SkynetClient {
    * @param {Object} [customOptions.params={}] - Query parameters to include in the URl.
    */
   constructor(portalUrl, customOptions = {}) {
+    // Check if portal URL provided twice.
+
     if (portalUrl && customOptions.portalUrl) {
       throw new Error(
         "Both 'portalUrl' parameter provided and 'customOptions.portalUrl' provided. Please pass only one in order to avoid conflicts."
       );
     }
+
+    // Add portal URL to options if given.
 
     this.customOptions = { ...customOptions };
     // If portal was not given, the default portal URL will be used.
@@ -31,6 +36,40 @@ class SkynetClient {
       // Set the portalUrl if given.
       this.customOptions.portalUrl = portalUrl;
     }
+
+    // Re-export selected client methods from skynet-js.
+
+    let browserClient = new BrowserSkynetClient(portalUrl);
+    this.browserClient = browserClient;
+
+    // Download
+    this.getSkylinkUrl = browserClient.getSkylinkUrl.bind(browserClient);
+
+    // File API
+    this.file = {
+      getJSON: browserClient.file.getJSON.bind(browserClient),
+      getEntryData: browserClient.file.getEntryData.bind(browserClient),
+      getEntryLink: browserClient.file.getEntryLink.bind(browserClient),
+      getJSONEncrypted: browserClient.file.getJSONEncrypted.bind(browserClient),
+    };
+
+    // SkyDB
+    this.db = {
+      deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
+      getJSON: browserClient.db.getJSON.bind(browserClient),
+      setJSON: browserClient.db.setJSON.bind(browserClient),
+      setDataLink: browserClient.db.setDataLink.bind(browserClient),
+      getRawBytes: browserClient.db.getRawBytes.bind(browserClient),
+    };
+
+    // Registry
+    this.registry = {
+      getEntry: browserClient.registry.getEntry.bind(browserClient),
+      getEntryUrl: browserClient.registry.getEntryUrl.bind(browserClient),
+      getEntryLink: browserClient.registry.getEntryLink.bind(browserClient),
+      setEntry: browserClient.registry.setEntry.bind(browserClient),
+      postSignedEntry: browserClient.registry.postSignedEntry.bind(browserClient),
+    };
   }
 
   /**
@@ -86,6 +125,8 @@ function buildRequestHeaders(baseHeaders, customUserAgent, customCookie) {
   }
   return returnHeaders;
 }
+
+// Export the client.
 
 module.exports = { SkynetClient, buildRequestHeaders };
 
