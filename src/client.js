@@ -47,19 +47,13 @@ class SkynetClient {
 
     // File API
     this.file = {
-      getJSON: browserClient.file.getJSON.bind(browserClient),
       getEntryData: browserClient.file.getEntryData.bind(browserClient),
       getEntryLink: browserClient.file.getEntryLink.bind(browserClient),
-      getJSONEncrypted: browserClient.file.getJSONEncrypted.bind(browserClient),
     };
 
     // SkyDB
     this.db = {
-      deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
-      getJSON: browserClient.db.getJSON.bind(browserClient),
-      setJSON: browserClient.db.setJSON.bind(browserClient),
       setDataLink: browserClient.db.setDataLink.bind(browserClient),
-      getRawBytes: browserClient.db.getRawBytes.bind(browserClient),
     };
 
     // Registry
