@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.0]
+
+### Added
+
+- Added `client.getSkylinkUrl`.
+- Added `client.file.getEntryData` and `client.file.getEntryLink`.
+- Added `client.db.setDataLink`.
+- Added `client.registry.getEntry`, `client.registry.getEntryUrl`, `client.registry.getEntryLink`, `client.registry.setEntry`, and ``client.registry.postSignedEntry`.
+- Added `genKeyPairAndSeed`, `genKeyPairFromSeed`, `getEntryLink` function exports.
+
 ## [2.2.0]
 
 ### Added
