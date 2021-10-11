@@ -46,7 +46,7 @@
     "url-join": "^4.0.1"
   },
   "devDependencies": {
-    "eslint": "^7.2.0",
+    "eslint": "^8.0.0",
     "husky": "^7.0.1",
     "jest": "^27.0.6",
     "lint-staged": "^11.1.2",
