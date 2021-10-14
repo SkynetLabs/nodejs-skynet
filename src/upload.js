@@ -124,7 +124,7 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
   }
 
   const formData = new FormData();
-  path = p.normalize(path);
+  path = p.resolve(path);
   let basepath = path;
   // Ensure the basepath ends in a slash.
   if (!basepath.endsWith("/")) {
@@ -142,7 +142,8 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
     formData.append(opts.portalDirectoryFileFieldname, fs.createReadStream(file), { filepath: filename });
   }
 
-  let filename = opts.customDirname || path;
+  // Use either the custom dirname, or the last portion of the path.
+  let filename = opts.customDirname || p.basename(path);
   if (filename.startsWith("/")) {
     filename = filename.slice(1);
   }
