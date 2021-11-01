@@ -171,6 +171,17 @@ describe("uploadDirectory", () => {
     }
   });
 
+  // Test that . and .. get resolved as these are not allowed in Sia paths.
+  it("should resolve paths containing . and ..", async () => {
+    await client.uploadDirectory(`${dirname}/./../${dirname}/.`);
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: { filename: dirname },
+      })
+    );
+  });
+
   it("should send post request to client portal", async () => {
     const newPortalUrl = "https://siasky.xyz";
     const client = new SkynetClient(newPortalUrl);
