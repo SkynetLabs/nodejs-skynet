@@ -39,9 +39,3 @@ SkynetClient.prototype.downloadFile = function (path, skylink, customOptions = {
       });
   });
 };
-
-SkynetClient.prototype.getMetadata = function (skylink, customOptions = {}) {
-  const opts = { ...defaultGetMetadataOptions, ...this.customOptions, ...customOptions };
-
-  throw new Error("Unimplemented");
-};

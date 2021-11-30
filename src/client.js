@@ -44,6 +44,7 @@ class SkynetClient {
 
     // Download
     this.getSkylinkUrl = browserClient.getSkylinkUrl.bind(browserClient);
+    this.getMetadata = browserClient.getMetadata.bind(browserClient);
 
     // File API
     this.file = {
