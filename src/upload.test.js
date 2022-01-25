@@ -83,7 +83,11 @@ describe("uploadFile", () => {
   });
 
   it("should use custom connection options if defined on the client", async () => {
-    const client = new SkynetClient("", { APIKey: "foobar", customUserAgent: "Sia-Agent" });
+    const client = new SkynetClient("", {
+      APIKey: "foobar",
+      customUserAgent: "Sia-Agent",
+      customCookie: "skynet-jwt=foo",
+    });
 
     await client.uploadFile(filename);
 
@@ -96,16 +100,24 @@ describe("uploadFile", () => {
           ]),
         }),
         auth: { username: "", password: "foobar" },
-        headers: expect.objectContaining({ "User-Agent": "Sia-Agent" }),
+        headers: expect.objectContaining({ "User-Agent": "Sia-Agent", Cookie: "skynet-jwt=foo" }),
         params: expect.anything(),
       })
     );
   });
 
   it("should use custom connection options if defined on the API call", async () => {
-    const client = new SkynetClient("", { APIKey: "foobar", customUserAgent: "Sia-Agent" });
+    const client = new SkynetClient("", {
+      APIKey: "foobar",
+      customUserAgent: "Sia-Agent",
+      customCookie: "skynet-jwt=foo",
+    });
 
-    await client.uploadFile(filename, { APIKey: "barfoo", customUserAgent: "Sia-Agent-2" });
+    await client.uploadFile(filename, {
+      APIKey: "barfoo",
+      customUserAgent: "Sia-Agent-2",
+      customCookie: "skynet-jwt=bar",
+    });
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -116,7 +128,7 @@ describe("uploadFile", () => {
           ]),
         }),
         auth: { username: "", password: "barfoo" },
-        headers: expect.objectContaining({ "User-Agent": "Sia-Agent-2" }),
+        headers: expect.objectContaining({ "User-Agent": "Sia-Agent-2", Cookie: "skynet-jwt=bar" }),
         params: expect.anything(),
       })
     );
