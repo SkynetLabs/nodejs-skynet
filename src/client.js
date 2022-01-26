@@ -35,7 +35,7 @@ class SkynetClient {
     // Re-export selected client methods from skynet-js.
 
     // Create the browser client. It requires an explicit portal URL to be passed in Node contexts. We also have to pass valid custom options, so we remove any unexpected ones.
-    const browserClientOptions = this.customOptions;
+    const browserClientOptions = { ...this.customOptions };
     delete browserClientOptions.portalUrl;
     const browserClient = new BrowserSkynetClient(portalUrl || defaultPortalUrl(), browserClientOptions);
     this.browserClient = browserClient;
