@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { SkynetClient: BrowserSkynetClient } = require("skynet-js");
 
-const { makeUrl } = require("./utils.js");
+const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
 class SkynetClient {
   /**
@@ -9,15 +9,10 @@ class SkynetClient {
    * @constructor
    * @param {string} [portalUrl="https://siasky.net"] - The portal URL to use to access Skynet, if specified. To use the default portal while passing custom options, use "".
    * @param {Object} [customOptions={}] - Configuration for the client.
-   * @param {string} [customOptions.method] - HTTP method to use.
    * @param {string} [customOptions.APIKey] - Authentication password to use.
    * @param {string} [customCookie=""] - Custom cookie header to set.
    * @param {string} [customOptions.customUserAgent=""] - Custom user agent header to set.
-   * @param {Object} [customOptions.data=null] - Data to send in a POST.
-   * @param {string} [customOptions.endpointPath=""] - The relative URL path of the portal endpoint to contact.
-   * @param {string} [customOptions.extraPath=""] - Extra path element to append to the URL.
    * @param {Function} [customOptions.onUploadProgress] - Optional callback to track progress.
-   * @param {Object} [customOptions.params={}] - Query parameters to include in the URl.
    */
   constructor(portalUrl, customOptions = {}) {
     // Check if portal URL provided twice.
@@ -39,7 +34,10 @@ class SkynetClient {
 
     // Re-export selected client methods from skynet-js.
 
-    let browserClient = new BrowserSkynetClient(portalUrl);
+    // Create the browser client. It requires an explicit portal URL to be passed in Node contexts. We also have to pass valid custom options, so we remove any unexpected ones.
+    const browserClientOptions = { ...this.customOptions };
+    delete browserClientOptions.portalUrl;
+    const browserClient = new BrowserSkynetClient(portalUrl || defaultPortalUrl(), browserClientOptions);
     this.browserClient = browserClient;
 
     // Download
@@ -61,7 +59,8 @@ class SkynetClient {
     this.registry = {
       getEntry: browserClient.registry.getEntry.bind(browserClient),
       getEntryUrl: browserClient.registry.getEntryUrl.bind(browserClient),
-      getEntryLink: browserClient.registry.getEntryLink.bind(browserClient),
+      // Don't bind the client since this method doesn't take the client.
+      getEntryLink: browserClient.registry.getEntryLink,
       setEntry: browserClient.registry.setEntry.bind(browserClient),
       postSignedEntry: browserClient.registry.postSignedEntry.bind(browserClient),
     };

@@ -32,11 +32,12 @@ describe("download", () => {
     tmpFile.removeCallback();
   });
 
-  it("should use custom options if defined", () => {
+  it("should use custom options if defined on the API call", () => {
     const tmpFile = tmp.fileSync();
 
     client.downloadFile(tmpFile.name, skylink, {
       portalUrl: "http://localhost",
+      customCookie: "skynet-jwt=foo",
     });
 
     expect(axios).toHaveBeenCalledWith(
@@ -44,6 +45,7 @@ describe("download", () => {
         url: `http://localhost/${skylink}`,
         method: "get",
         responseType: "stream",
+        headers: expect.objectContaining({ Cookie: "skynet-jwt=foo" }),
       })
     );
 
@@ -52,15 +54,23 @@ describe("download", () => {
 
   it("should use custom connection options if defined on the client", () => {
     const tmpFile = tmp.fileSync();
-    const client = new SkynetClient("", { APIKey: "foobar", customUserAgent: "Sia-Agent" });
+    const client = new SkynetClient("", {
+      APIKey: "foobar",
+      customUserAgent: "Sia-Agent",
+      customCookie: "skynet-jwt=foo",
+    });
 
-    client.downloadFile(tmpFile.name, skylink, { APIKey: "barfoo", customUserAgent: "Sia-Agent-2" });
+    client.downloadFile(tmpFile.name, skylink, {
+      APIKey: "barfoo",
+      customUserAgent: "Sia-Agent-2",
+      customCookie: "skynet-jwt=bar",
+    });
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
         url: `${portalUrl}/${skylink}`,
         auth: { username: "", password: "barfoo" },
-        headers: expect.objectContaining({ "User-Agent": "Sia-Agent-2" }),
+        headers: expect.objectContaining({ "User-Agent": "Sia-Agent-2", Cookie: "skynet-jwt=bar" }),
       })
     );
 
