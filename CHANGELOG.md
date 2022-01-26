@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.1]
+
+### Changed
+
+- Fix Options not being marshaled from the `nodejs` client to the `skynet-js` client.
+- Fix an issue with `client.getEntryLink`.
+- Fix `skynet-js` client initialization in Node context (portal URL undefined).
+
 ## [2.4.0]
 
 ### Added
