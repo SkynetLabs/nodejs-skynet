@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.0]
+
+### Added
+
+- Add `skynetApiKey` option for portal API keys.
+
 ## [2.4.1]
 
 ### Changed
