@@ -10,6 +10,7 @@ class SkynetClient {
    * @param {string} [portalUrl="https://siasky.net"] - The portal URL to use to access Skynet, if specified. To use the default portal while passing custom options, use "".
    * @param {Object} [customOptions={}] - Configuration for the client.
    * @param {string} [customOptions.APIKey] - Authentication password to use.
+   * @param {string} [customOptions.skynetApiKey] - Authentication API key to use for a Skynet portal (sets the "Skynet-Api-Key" header).
    * @param {string} [customCookie=""] - Custom cookie header to set.
    * @param {string} [customOptions.customUserAgent=""] - Custom user agent header to set.
    * @param {Function} [customOptions.onUploadProgress] - Optional callback to track progress.
@@ -77,7 +78,12 @@ class SkynetClient {
     }
 
     // Build headers.
-    const headers = buildRequestHeaders(config.headers, config.customUserAgent, config.customCookie);
+    const headers = buildRequestHeaders(
+      config.headers,
+      config.customUserAgent,
+      config.customCookie,
+      config.skynetApiKey
+    );
 
     return axios({
       url,
@@ -106,9 +112,10 @@ class SkynetClient {
  * @param [baseHeaders] - Any base headers.
  * @param [customUserAgent] - A custom user agent to set.
  * @param [customCookie] - A custom cookie.
+ * @param [skynetApiKey] - Authentication key to use for a Skynet portal.
  * @returns - The built headers.
  */
-function buildRequestHeaders(baseHeaders, customUserAgent, customCookie) {
+function buildRequestHeaders(baseHeaders, customUserAgent, customCookie, skynetApiKey) {
   const returnHeaders = { ...baseHeaders };
   // Set some headers from common options.
   if (customUserAgent) {
@@ -116,6 +123,9 @@ function buildRequestHeaders(baseHeaders, customUserAgent, customCookie) {
   }
   if (customCookie) {
     returnHeaders["Cookie"] = customCookie;
+  }
+  if (skynetApiKey) {
+    returnHeaders["Skynet-Api-Key"] = skynetApiKey;
   }
   return returnHeaders;
 }

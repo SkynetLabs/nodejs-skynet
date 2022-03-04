@@ -85,6 +85,7 @@ describe("uploadFile", () => {
   it("should use custom connection options if defined on the client", async () => {
     const client = new SkynetClient("", {
       APIKey: "foobar",
+      skynetApiKey: "api-key",
       customUserAgent: "Sia-Agent",
       customCookie: "skynet-jwt=foo",
     });
@@ -100,7 +101,11 @@ describe("uploadFile", () => {
           ]),
         }),
         auth: { username: "", password: "foobar" },
-        headers: expect.objectContaining({ "User-Agent": "Sia-Agent", Cookie: "skynet-jwt=foo" }),
+        headers: expect.objectContaining({
+          "User-Agent": "Sia-Agent",
+          Cookie: "skynet-jwt=foo",
+          "Skynet-Api-Key": "api-key",
+        }),
         params: expect.anything(),
       })
     );

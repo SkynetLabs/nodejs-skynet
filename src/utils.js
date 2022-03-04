@@ -22,6 +22,7 @@ function defaultOptions(endpointPath) {
     endpointPath: endpointPath,
 
     APIKey: "",
+    skynetApiKey: "",
     customUserAgent: "",
   };
 }
