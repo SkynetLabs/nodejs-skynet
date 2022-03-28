@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.1]
+
+### Changed
+
+- Fix `skynetApiKey` not being passed for certain methods.
+
 ## [2.5.0]
 
 ### Added
