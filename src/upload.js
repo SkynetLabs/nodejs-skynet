@@ -35,6 +35,27 @@ const defaultUploadOptions = {
   tryFiles: undefined,
 };
 
+SkynetClient.prototype.uploadData = async function (data, filename, customOptions = {}) {
+  const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
+
+  const params = {};
+  if (opts.dryRun) params.dryrun = true;
+
+  const formData = new FormData();
+  formData.append(opts.portalFileFieldname, data, filename);
+
+  const response = await this.executeRequest({
+    ...opts,
+    method: "post",
+    data: formData,
+    headers: formData.getHeaders(),
+    params,
+  });
+
+  const skylink = response.data.skylink;
+  return `${uriSkynetPrefix}${skylink}`;
+};
+
 SkynetClient.prototype.uploadFile = async function (path, customOptions = {}) {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
 
