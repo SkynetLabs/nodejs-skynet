@@ -54,6 +54,13 @@ class SkynetClient {
     // SkyDB
     this.db = {
       setDataLink: browserClient.db.setDataLink.bind(browserClient),
+      setJSON: nodejs_db_setJSON.bind(this),
+      getJSON: browserClient.db.getJSON.bind(browserClient),
+      deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
+//      getEntryData: browserClient.db.getEntryData.bind(browserClient),
+//      setEntryData: nodejs_db_setEntryData.bind(this),
+//      deleteEntryData: browserClient.db.deleteEntryData.bind(browserClient),
+//      getRawBytes: browserClient.db.getRawBytes.bind(browserClient),
     };
 
     // Registry
@@ -138,3 +145,4 @@ module.exports = { SkynetClient, buildRequestHeaders };
 require("./download.js");
 require("./encryption.js");
 require("./upload.js");
+const { nodejs_db_setJSON } = require("./skydb.js");
