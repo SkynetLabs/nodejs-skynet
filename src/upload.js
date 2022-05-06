@@ -35,6 +35,14 @@ const defaultUploadOptions = {
   tryFiles: undefined,
 };
 
+/**
+ * Uploads in-memory data to Skynet.
+ *
+ * @param {string|Buffer} data - The data to upload, either a string or raw bytes.
+ * @param {string} filename - The filename to use on Skynet.
+ * @param {Object} [customOptions={}] - Configuration options.
+ * @returns - The skylink.
+ */
 SkynetClient.prototype.uploadData = async function (data, filename, customOptions = {}) {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
 
