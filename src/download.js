@@ -15,6 +15,13 @@ const defaultGetMetadataOptions = {
   ...defaultOptions("/"),
 };
 
+/**
+ * Downloads in-memory data from a skylink.
+ *
+ * @param {string} skylink - The skylink.
+ * @param {Object} [customOptions={}] - Configuration options.
+ * @returns - The data.
+ */
 SkynetClient.prototype.downloadData = async function (skylink, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
 
