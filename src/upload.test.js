@@ -289,3 +289,33 @@ describe("uploadDirectory", () => {
     expect(data).toEqual(sialink);
   });
 });
+
+describe("uploadData", () => {
+  const filename = "testdata/file1.txt";
+  const data = "asdf";
+
+  beforeEach(() => {
+    axios.mockResolvedValue({ data: { skylink } });
+  });
+
+  it("should send post request to default portal", async () => {
+    const receivedSkylink = await client.uploadData(data, filename);
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: `${portalUrl}/skynet/skyfile`,
+        data: expect.objectContaining({
+          _streams: expect.arrayContaining([
+            expect.stringContaining(
+              'Content-Disposition: form-data; name="file"; filename="file1.txt"\r\nContent-Type: text/plain'
+            ),
+          ]),
+        }),
+        headers: expect.objectContaining({ "content-type": expect.stringContaining("multipart/form-data") }),
+        params: expect.anything(),
+      })
+    );
+
+    expect(receivedSkylink).toEqual(`sia://${skylink}`);
+  });
+});

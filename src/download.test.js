@@ -9,7 +9,7 @@ const portalUrl = defaultPortalUrl();
 const skylink = "XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg";
 const client = new SkynetClient();
 
-describe("download", () => {
+describe("downloadFile", () => {
   const body = "asdf";
 
   beforeEach(() => {
@@ -81,5 +81,27 @@ describe("download", () => {
     );
 
     tmpFile.removeCallback();
+  });
+});
+
+describe("downloadData", () => {
+  const body = "asdf";
+
+  beforeEach(() => {
+    axios.mockResolvedValue({ data: body });
+  });
+
+  it("should send get request to default portal", async () => {
+    const data = await client.downloadData(skylink);
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: `${portalUrl}/${skylink}`,
+        method: "get",
+        responseType: "arraybuffer",
+      })
+    );
+
+    expect(data).toEqual(body);
   });
 });

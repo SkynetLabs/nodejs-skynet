@@ -1,8 +1,28 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Types of changes:
+
+- `Added` for new features.
+- `Changed` for changes in existing functionality.
+- `Removed` for now removed features.
+- `Deprecated` for soon-to-be removed features.
+- `Fixed` for any bug fixes.
+- `Security` in case of vulnerabilities.
+
+## Unreleased
+
+### Added
+
+- Add `uploadData` and `downloadData`
+
 ## [2.5.1]
 
-### Changed
+### Fixed
 
 - Fix `skynetApiKey` not being passed for certain methods.
 
@@ -14,7 +34,7 @@
 
 ## [2.4.1]
 
-### Changed
+### Fixed
 
 - Fix Options not being marshaled from the `nodejs` client to the `skynet-js` client.
 - Fix an issue with `client.getEntryLink`.
@@ -28,7 +48,7 @@
 
 ## [2.3.1]
 
-### Changed
+### Fixed
 
 - Fixed bug with paths containing `.` and `..` as inputs to `uploadDirectory`.
 
@@ -48,7 +68,7 @@
 
 - Added `errorPages` and `tryFiles` options when uploading directories
 
-### Changed
+### Fixed
 
 - Fixed custom client portal URL being ignored
 
@@ -61,11 +81,14 @@
 
 ## [2.0.1]
 
+## Fixed
+
+- Fixed length limits for request bodies.
+- Fixed upload errors due to missing headers.
+
 ### Changed
 
 - Remove leading slash in directory path before uploading an absolute path.
-- Fixed length limits for request bodies.
-- Fixed upload errors due to missing headers.
 
 ## [2.0.0]
 
@@ -90,7 +113,7 @@
 - API authentication
 - `dryRun` option
 
-### Changed
+### Fixed
 
 - Some upload bugs were fixed.
 

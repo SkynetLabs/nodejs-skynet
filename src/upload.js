@@ -35,25 +35,45 @@ const defaultUploadOptions = {
   tryFiles: undefined,
 };
 
+/**
+ * Uploads in-memory data to Skynet.
+ *
+ * @param {string|Buffer} data - The data to upload, either a string or raw bytes.
+ * @param {string} filename - The filename to use on Skynet.
+ * @param {Object} [customOptions={}] - Configuration options.
+ * @returns - The skylink.
+ */
+SkynetClient.prototype.uploadData = async function (data, filename, customOptions = {}) {
+  const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
+
+  const sizeInBytes = data.length;
+
+  if (sizeInBytes < opts.largeFileSize) {
+    return await uploadSmallFile(this, data, filename, opts);
+  }
+  return await uploadLargeFile(this, data, filename, sizeInBytes, opts);
+};
+
 SkynetClient.prototype.uploadFile = async function (path, customOptions = {}) {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
 
   const stat = await fs.promises.stat(path);
   const sizeInBytes = stat.size;
   const filename = opts.customFilename ? opts.customFilename : p.basename(path);
+  const stream = fs.createReadStream(path);
 
   if (sizeInBytes < opts.largeFileSize) {
-    return await uploadSmallFile(this, path, filename, opts);
+    return await uploadSmallFile(this, stream, filename, opts);
   }
-  return await uploadLargeFile(this, path, filename, sizeInBytes, opts);
+  return await uploadLargeFile(this, stream, filename, sizeInBytes, opts);
 };
 
-async function uploadSmallFile(client, path, filename, opts) {
+async function uploadSmallFile(client, stream, filename, opts) {
   const params = {};
   if (opts.dryRun) params.dryrun = true;
 
   const formData = new FormData();
-  formData.append(opts.portalFileFieldname, fs.createReadStream(path), filename);
+  formData.append(opts.portalFileFieldname, stream, filename);
 
   const response = await client.executeRequest({
     ...opts,
@@ -67,7 +87,7 @@ async function uploadSmallFile(client, path, filename, opts) {
   return `${uriSkynetPrefix}${skylink}`;
 }
 
-async function uploadLargeFile(client, path, filename, filesize, opts) {
+async function uploadLargeFile(client, stream, filename, filesize, opts) {
   const url = makeUrl(opts.portalUrl, opts.endpointLargeUpload);
 
   // Build headers.
@@ -109,7 +129,7 @@ async function uploadLargeFile(client, path, filename, filesize, opts) {
       },
     };
 
-    const upload = new Upload(fs.createReadStream(path), tusOpts);
+    const upload = new Upload(stream, tusOpts);
     upload.start();
   });
 }
