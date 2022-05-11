@@ -1,17 +1,12 @@
 "use strict";
 const { sign } = require("tweetnacl");
 const FormData = require("form-data");
-const { fromByteArray, toByteArray } = require("base64-js");
-const { SkynetClient } = require("./client");
+const { toByteArray } = require("base64-js");
 const { defaultOptions } = require("./utils");
 
 const defaultSkydbOptions = {
   ...defaultOptions("/skynet/skyfile"),
   portalFileFieldname: "file",
-};
-
-BigInt.prototype.toJSON = function () {
-  return this.toString();
 };
 
 const JSON_RESPONSE_VERSION = 2;

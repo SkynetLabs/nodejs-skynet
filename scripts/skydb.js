@@ -21,10 +21,11 @@ const client = new SkynetClient("https://siasky.net");
   const data = { example: "This is some example JSON data." };
 
   if (dbVersion === "-v1") {
+    // First use db.setJSON to add new data
     await client.db
       .setJSON(privateKey, dataKey, data)
       .then((res) => {
-        console.log('\nThird, you can check "dbV2.getJSON" called again for current data.');
+        console.log("\nFirst use db.setJSON to add new data.");
         console.log(`db.setJSON:`);
         console.log(`Saved dataLink: ${res.dataLink}`);
         console.log(`Saved Data: ${JSON.stringify(res.data)}`);
@@ -33,11 +34,11 @@ const client = new SkynetClient("https://siasky.net");
         console.log("Error: ", JSON.stringify(err));
       });
 
-    // First use setJSON to add new data.
+    // Secound use db.getJSON to get the data.
     await client.db
       .getJSON(publicKey, dataKey)
       .then((data) => {
-        console.log("\nFirst use setJSON to add new data.");
+        console.log("\nSecound use db.getJSON to get the data.");
         console.log(`db.getJSON:`);
         console.log("Retrieved DataLink: " + data["dataLink"]);
         console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
@@ -62,11 +63,11 @@ const client = new SkynetClient("https://siasky.net");
           console.log("Get Error: ", JSON.stringify(err));
         });
 
-      // Second, "dbV2.setJSON" can then be called.
+      // Second, "dbV2.setJSON" can then to set new Data.
       await client.dbV2
         .setJSON(privateKey, dataKey, data)
         .then((res) => {
-          console.log('\nSecond, "dbV2.setJSON" can then be called.');
+          console.log('\nSecond, "dbV2.setJSON" can then to set new Data.');
           console.log(`dbV2.setJSON:`);
           console.log(`Saved dataLink: ${res.dataLink}`);
           console.log(`Saved Data: ${JSON.stringify(res.data)}`);
