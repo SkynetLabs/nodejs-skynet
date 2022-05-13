@@ -62,6 +62,7 @@ class SkynetClient {
       getEntryData: browserClient.db.getEntryData.bind(browserClient),
       setEntryData: browserClient.db.setEntryData.bind(browserClient),
       deleteEntryData: browserClient.db.deleteEntryData.bind(browserClient),
+      getRawBytes: browserClient.db.getRawBytes.bind(browserClient),
     };
 
     // SkyDB V2
@@ -73,6 +74,7 @@ class SkynetClient {
       getEntryData: browserClient.dbV2.getEntryData.bind(browserClient),
       setEntryData: browserClient.dbV2.setEntryData.bind(browserClient),
       deleteEntryData: browserClient.dbV2.deleteEntryData.bind(browserClient),
+      getRawBytes: browserClient.dbV2.getRawBytes.bind(browserClient),
       revisionNumberCache: browserClient.dbV2.revisionNumberCache,
     };
 
