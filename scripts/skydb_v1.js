@@ -1,13 +1,15 @@
 /**
  * Demo script for test all funktions from skydb v1.
  *
- * Example for Skydb v1 usage: node scripts/skydb.js dataKey {\"example\":\""This is some example JSON data\"}
+ * Example for Skydb v1 usage: node scripts/skydb_v1.js dataKey "Seed Test Key" ./testdata/data.json
  *
- * Example with default data : node scripts/skydb.js dataKey
+ * Example with default data : node scripts/skydb_v1.js dataKey "Seed Test Key"
  *
  */
 
+const fs = require("fs");
 const process = require("process");
+
 (async () => {
   const { SkynetClient, genKeyPairFromSeed } = require("..");
   const client = new SkynetClient("https://siasky.net");
@@ -16,16 +18,18 @@ const process = require("process");
   console.log("\n\ndataKey =  " + dataKey);
   const SeedKey = process.argv[3];
   console.log("SeedKey =  " + SeedKey);
-  const dataJson = process.argv[4];
-  let data;
 
+  let data;
+  const path_dataJson = process.argv[4];
   if (process.argv[4] === undefined) {
     console.log("Default dataJson used.");
-    data = { example: "This is some example JSON data." };
+    data = { example: "This is some example JSON data" };
   } else {
-    console.log("dataJson from command line argument");
-    data = JSON.parse(dataJson);
+    console.log("path_dataJson from command line argument");
+    const rawJSONdata = fs.readFileSync(path_dataJson);
+    data = JSON.parse(rawJSONdata);
   }
+  console.log("data: " + JSON.stringify(data));
 
   const { publicKey, privateKey } = genKeyPairFromSeed(SeedKey);
   console.log("\n\npublicKey: " + publicKey);
@@ -47,7 +51,7 @@ const process = require("process");
       console.log(`Saved Data: ${JSON.stringify(res.data)}`);
     })
     .catch((err) => {
-      console.log("Error: ", JSON.stringify(err));
+      console.log("Error: ", err);
     });
 
   // 2. use db.getJSON to get the data.
