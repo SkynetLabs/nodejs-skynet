@@ -2,13 +2,13 @@
 
 const FormData = require("form-data");
 const {
-  defaultGetEntryOptions,
-  defaultSetEntryOptions,
+  MAX_REVISION,
+  DEFAULT_GET_ENTRY_OPTIONS,
+  DEFAULT_SET_ENTRY_OPTIONS,
   defaultSkydbOptions,
   buildSkynetJsonObject,
   getPublicKeyfromPrivateKey,
-  max_revision,
-  raw_skylink_size,
+  RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
 } = require("./defaults");
 
@@ -39,7 +39,7 @@ const nodejs_db_setJSON = async function (privateKey, dataKey, json, customOptio
   const { entry, dataLink } = await getOrCreateRegistryEntry(this, publicKey, dataKey, json, opts);
 
   // Update the registry.
-  await this.registry.setEntry(privateKey, entry, defaultSetEntryOptions);
+  await this.registry.setEntry(privateKey, entry, DEFAULT_SET_ENTRY_OPTIONS);
 
   return { data: json, dataLink: dataLink };
 };
@@ -67,13 +67,13 @@ const getOrCreateRegistryEntry = async function (client, publicKey, dataKey, jso
   const { skylink, shortskylink } = await uploadJSONdata(client, fullData, dataKey, opts);
 
   // Fetch the current value to find out the revision.
-  const signedEntry = await client.registry.getEntry(publicKey, dataKey, defaultGetEntryOptions);
+  const signedEntry = await client.registry.getEntry(publicKey, dataKey, DEFAULT_GET_ENTRY_OPTIONS);
 
   const revision = getNextRevisionFromEntry(signedEntry.entry);
 
   // Build the registry entry.
   const rawDataLink = decodeSkylinkBase64(shortskylink);
-  if (rawDataLink.length !== raw_skylink_size) {
+  if (rawDataLink.length !== RAW_SKYLINK_SIZE) {
     throw new Error("RawDataLink is not 34 bytes long.");
   }
 
@@ -102,7 +102,7 @@ const getNextRevisionFromEntry = function (entry) {
     revision = entry.revision + BigInt(1);
   }
   // Throw if the revision is already the maximum value.
-  if (revision > max_revision) {
+  if (revision > MAX_REVISION) {
     throw new Error("Current entry already has maximum allowed revision, could not update the entry");
   }
   return revision;
@@ -142,7 +142,7 @@ const nodejs_dbV2_setJSON = async function (privateKey, dataKey, json, customOpt
     const { entry, dataLink } = await getOrCreateSkyDBRegistryEntry(this, dataKey, json, newRevision, opts);
 
     // Update the registry.
-    await this.registry.setEntry(privateKey, entry, defaultSetEntryOptions);
+    await this.registry.setEntry(privateKey, entry, DEFAULT_SET_ENTRY_OPTIONS);
 
     // Update the cached revision number.
     cachedRevisionEntry.revision = newRevision;
@@ -178,7 +178,7 @@ const getOrCreateSkyDBRegistryEntry = async function (client, dataKey, json, new
   // Build the registry entry.
   const revision = newRevision;
   const rawDataLink = decodeSkylinkBase64(shortskylink);
-  if (rawDataLink.length !== raw_skylink_size) {
+  if (rawDataLink.length !== RAW_SKYLINK_SIZE) {
     throw new Error("RawDataLink is not 34 bytes long.");
   }
 
@@ -203,7 +203,7 @@ const getOrCreateSkyDBRegistryEntry = async function (client, dataKey, json, new
 const incrementRevision = function (revision) {
   revision = revision + BigInt(1);
   // Throw if the revision is already the maximum value.
-  if (revision > max_revision) {
+  if (revision > MAX_REVISION) {
     throw new Error("Current entry already has maximum allowed revision, could not update the entry");
   }
   return revision;

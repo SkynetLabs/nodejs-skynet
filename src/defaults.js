@@ -2,12 +2,13 @@
 const { defaultOptions } = require("./utils");
 const { sign } = require("tweetnacl");
 const { toByteArray } = require("base64-js");
+const { MAX_REVISION } = require("skynet-js");
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
-const defaultBaseOptions = {
+const DEFAULT_BASE_OPTIONS = {
   APIKey: "",
   skynetApiKey: "",
   customUserAgent: "",
@@ -17,14 +18,14 @@ const defaultBaseOptions = {
   loginFn: undefined,
 };
 
-const defaultGetEntryOptions = {
-  ...defaultBaseOptions,
+const DEFAULT_GET_ENTRY_OPTIONS = {
+  ...DEFAULT_BASE_OPTIONS,
   endpointGetEntry: "/skynet/registry",
   hashedDataKeyHex: false,
 };
 
-const defaultSetEntryOptions = {
-  ...defaultBaseOptions,
+const DEFAULT_SET_ENTRY_OPTIONS = {
+  ...DEFAULT_BASE_OPTIONS,
   endpointSetEntry: "/skynet/registry",
   hashedDataKeyHex: false,
 };
@@ -34,7 +35,7 @@ const defaultSkydbOptions = {
   portalFileFieldname: "file",
 };
 
-const json_response_version = 2;
+const JSON_RESPONSE_VERSION = 2;
 
 /**
  * Sets the hidden _data and _v fields on the given raw JSON data.
@@ -42,8 +43,8 @@ const json_response_version = 2;
  * @param data - The given JSON data.
  * @returns - The Skynet JSON data.
  */
-const buildSkynetJsonObject = async function (data) {
-  return { _data: data, _v: json_response_version };
+const buildSkynetJsonObject = function (data) {
+  return { _data: data, _v: JSON_RESPONSE_VERSION };
 };
 
 const getPublicKeyfromPrivateKey = function (privateKey) {
@@ -56,12 +57,12 @@ const getPublicKeyfromPrivateKey = function (privateKey) {
 /**
  * The string length of the Skylink after it has been encoded using base64.
  */
-const base64_encoded_skylink_size = 46;
+const BASE64_ENCODED_SKYLINK_SIZE = 46;
 
 /**
  * The raw size in bytes of the data that gets put into a link.
  */
-const raw_skylink_size = 34;
+const RAW_SKYLINK_SIZE = 34;
 
 /**
  * Decodes the skylink encoded using base64 raw URL encoding to bytes.
@@ -71,7 +72,7 @@ const raw_skylink_size = 34;
  */
 function decodeSkylinkBase64(skylink) {
   // Check if Skylink is 46 bytes long.
-  if (skylink.length !== base64_encoded_skylink_size) {
+  if (skylink.length !== BASE64_ENCODED_SKYLINK_SIZE) {
     throw new Error("Skylink is not 46 bytes long.");
   }
   // Add padding.
@@ -81,22 +82,17 @@ function decodeSkylinkBase64(skylink) {
   return toByteArray(skylink);
 }
 
-/**
- * The maximum allowed value for an entry revision. Setting an entry revision to this value prevents it from being updated further.
- */
-const max_revision = BigInt("18446744073709551615");
-
 module.exports = {
   defaultOptions,
-  defaultBaseOptions,
-  defaultGetEntryOptions,
-  defaultSetEntryOptions,
+  MAX_REVISION,
+  DEFAULT_BASE_OPTIONS,
+  DEFAULT_GET_ENTRY_OPTIONS,
+  DEFAULT_SET_ENTRY_OPTIONS,
   defaultSkydbOptions,
-  json_response_version,
+  JSON_RESPONSE_VERSION,
   buildSkynetJsonObject,
-  max_revision,
   getPublicKeyfromPrivateKey,
-  base64_encoded_skylink_size,
-  raw_skylink_size,
+  BASE64_ENCODED_SKYLINK_SIZE,
+  RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
 };
