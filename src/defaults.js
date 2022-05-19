@@ -1,5 +1,6 @@
 "use strict";
-const { defaultOptions } = require("./utils");
+const FormData = require("form-data");
+const { defaultOptions, uriSkynetPrefix } = require("./utils");
 const { sign } = require("tweetnacl");
 const { toByteArray } = require("base64-js");
 const { MAX_REVISION } = require("skynet-js");
@@ -21,13 +22,11 @@ const DEFAULT_BASE_OPTIONS = {
 const DEFAULT_GET_ENTRY_OPTIONS = {
   ...DEFAULT_BASE_OPTIONS,
   endpointGetEntry: "/skynet/registry",
-  hashedDataKeyHex: false,
 };
 
 const DEFAULT_SET_ENTRY_OPTIONS = {
   ...DEFAULT_BASE_OPTIONS,
   endpointSetEntry: "/skynet/registry",
-  hashedDataKeyHex: false,
 };
 
 const defaultSkydbOptions = {
@@ -82,6 +81,39 @@ function decodeSkylinkBase64(skylink) {
   return toByteArray(skylink);
 }
 
+/**
+ * Uploads only jsonData from in-memory to Skynet for SkyDB V1 and V2.
+ *
+ * @param {string|Buffer} data - The data to upload, either a string or raw bytes.
+ * @param {string} filename - The filename to use on Skynet.
+ * @param {Object} [customOptions={}] - Configuration options.
+ * @returns - The skylink and shortskylink is a trimUriPrefix from skylink
+ */
+const uploadJSONdata = async function (client, fullData, dataKey, customOptions = {}) {
+  const opts = { ...defaultSkydbOptions, ...client.customOptions, ...customOptions };
+
+  // uploads in-memory data to skynet
+  const params = {};
+  if (opts.dryRun) params.dryrun = true;
+
+  const formData = new FormData();
+  formData.append(opts.portalFileFieldname, fullData, dataKey);
+
+  const response = await client.executeRequest({
+    ...opts,
+    method: "post",
+    data: formData,
+    headers: formData.getHeaders(),
+    params,
+  });
+
+  // short_skylink is a trimUriPrefix from skylink
+  const short_skylink = response.data.skylink;
+  const skylink = uriSkynetPrefix + short_skylink;
+
+  return { skylink: skylink, shortskylink: short_skylink };
+};
+
 module.exports = {
   defaultOptions,
   MAX_REVISION,
@@ -95,4 +127,5 @@ module.exports = {
   BASE64_ENCODED_SKYLINK_SIZE,
   RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
+  uploadJSONdata,
 };

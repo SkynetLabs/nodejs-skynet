@@ -1,9 +1,9 @@
 /**
- * Demo script for test all funktions from SkyDB v1.
+ * Demo script for test all funktions from SkyDB V1.
  *
- * Example for Skydb v1 usage: node scripts/skydb.js dataKey "Seed Test Key" ./testdata/data.json
+ * Example for SkyDB V1 usage: node scripts/skydb.js dataKey "Seed Test Key" ./testdata/data.json
  *
- * Example with default data : node scripts/skydb.js dataKey "Seed Test Key"
+ * Example with default data: node scripts/skydb.js dataKey "Seed Test Key"
  *
  */
 

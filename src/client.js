@@ -3,7 +3,8 @@ const { SkynetClient: BrowserSkynetClient } = require("skynet-js");
 
 const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
-const { nodejs_db_setJSON, nodejs_dbV2_setJSON } = require("./skydb.js");
+const { nodejs_db_setJSON } = require("./skydb.js");
+const { nodejs_dbV2_setJSON } = require("./skydb_v2.js");
 
 class SkynetClient {
   /**
