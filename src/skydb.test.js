@@ -1,12 +1,12 @@
 const axios = require("axios");
 
-const { SkynetClient, genKeyPairFromSeed } = require("../index");
+const { SkynetClient, genKeyPairAndSeed } = require("../index");
 
 jest.mock("axios");
 
 const dataKey = "testdatakey";
 const data = { example: "This is some example JSON data." };
-const { publicKey, privateKey } = genKeyPairFromSeed("Super Save Test Secret");
+const { publicKey, privateKey } = genKeyPairAndSeed();
 
 const skylink = "AAA_uTgxYiKcqpGMLNe2V52fLc3FivZBZStLVqMSeHnGtQ";
 const client = new SkynetClient("https://siasky.net");
