@@ -3,12 +3,13 @@
 const {
   MAX_REVISION,
   DEFAULT_SET_ENTRY_OPTIONS,
-  defaultSkydbOptions,
+  DEFAULT_SKYDB_OPTIONS,
   buildSkynetJsonObject,
-  getPublicKeyfromPrivateKey,
+  getPublicKeyFromPrivateKey,
   RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
-  uploadJSONdata,
+  formatSkylink,
+  uploadJsonData,
 } = require("./defaults");
 
 /**
@@ -24,10 +25,10 @@ const {
  * @returns - The returned JSON and corresponding data link.
  * @throws - Will throw if the input keys are not valid strings.
  */
-const nodejs_dbV2_setJSON = async function (privateKey, dataKey, json, customOptions = {}) {
-  const opts = { ...defaultSkydbOptions, ...this.customOptions, ...customOptions };
+const setJSONdbV2 = async function (privateKey, dataKey, json, customOptions = {}) {
+  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...this.customOptions, ...customOptions };
 
-  const publicKey = getPublicKeyfromPrivateKey(privateKey);
+  const publicKey = getPublicKeyFromPrivateKey(privateKey);
 
   // Immediately fail if the mutex is not available.
   return await this.dbV2.revisionNumberCache.withCachedEntryLock(publicKey, dataKey, async (cachedRevisionEntry) => {
@@ -42,7 +43,7 @@ const nodejs_dbV2_setJSON = async function (privateKey, dataKey, json, customOpt
     // Update the cached revision number.
     cachedRevisionEntry.revision = newRevision;
 
-    return { data: json, dataLink: dataLink };
+    return { data: json, dataLink: formatSkylink(dataLink) };
   });
 };
 
@@ -60,20 +61,20 @@ const nodejs_dbV2_setJSON = async function (privateKey, dataKey, json, customOpt
  * @throws - Will throw if the revision is already the maximum value.
  */
 const getOrCreateSkyDBRegistryEntry = async function (client, dataKey, json, newRevision, customOptions = {}) {
-  const opts = { ...defaultSkydbOptions, ...client.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...client.customOptions, ...customOptions };
 
   // Set the hidden _data and _v fields.
   const skynetJson = await buildSkynetJsonObject(json);
   const fullData = JSON.stringify(skynetJson);
 
   // uploads in-memory data to skynet
-  const { skylink, shortskylink } = await uploadJSONdata(client, fullData, dataKey, opts);
+  const { skylink, shortSkylink } = await uploadJsonData(client, fullData, dataKey, opts);
 
   // Build the registry entry.
   const revision = newRevision;
-  const rawDataLink = decodeSkylinkBase64(shortskylink);
+  const rawDataLink = decodeSkylinkBase64(shortSkylink);
   if (rawDataLink.length !== RAW_SKYLINK_SIZE) {
-    throw new Error("RawDataLink is not 34 bytes long.");
+    throw new Error("rawDataLink is not 34 bytes long.");
   }
 
   const entry = {
@@ -82,7 +83,7 @@ const getOrCreateSkyDBRegistryEntry = async function (client, dataKey, json, new
     revision,
   };
 
-  return { entry: entry, dataLink: skylink };
+  return { entry: entry, dataLink: formatSkylink(skylink) };
 };
 
 /**
@@ -102,4 +103,4 @@ const incrementRevision = function (revision) {
   return revision;
 };
 
-module.exports = { nodejs_dbV2_setJSON };
+module.exports = { setJSONdbV2 };

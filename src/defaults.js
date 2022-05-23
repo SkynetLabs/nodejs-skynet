@@ -1,6 +1,6 @@
 "use strict";
 const FormData = require("form-data");
-const { defaultOptions, uriSkynetPrefix } = require("./utils");
+const { defaultOptions } = require("./utils");
 const { sign } = require("tweetnacl");
 const { toByteArray } = require("base64-js");
 const { MAX_REVISION } = require("skynet-js");
@@ -29,10 +29,15 @@ const DEFAULT_SET_ENTRY_OPTIONS = {
   endpointSetEntry: "/skynet/registry",
 };
 
-const defaultSkydbOptions = {
+const DEFAULT_SKYDB_OPTIONS = {
   ...defaultOptions("/skynet/skyfile"),
   portalFileFieldname: "file",
 };
+
+/**
+ * URI_SKYNET_PREFIX.
+ */
+const URI_SKYNET_PREFIX = "sia://";
 
 const JSON_RESPONSE_VERSION = 2;
 
@@ -46,7 +51,13 @@ const buildSkynetJsonObject = function (data) {
   return { _data: data, _v: JSON_RESPONSE_VERSION };
 };
 
-const getPublicKeyfromPrivateKey = function (privateKey) {
+/**
+ * Get the publicKey from privateKey.
+ *
+ * @param privateKey - The privateKey.
+ * @returns - The publicKey.
+ */
+const getPublicKeyFromPrivateKey = function (privateKey) {
   const publicKey = Buffer.from(
     sign.keyPair.fromSecretKey(Uint8Array.from(Buffer.from(privateKey, "hex"))).publicKey
   ).toString("hex");
@@ -82,15 +93,36 @@ function decodeSkylinkBase64(skylink) {
 }
 
 /**
+ * Formats the skylink by adding the sia: prefix.
+ *
+ * @param skylink - The skylink.
+ * @returns - The formatted skylink.
+ */
+function formatSkylink(skylink) {
+  //validateString("skylink", skylink, "parameter");
+  if (typeof skylink !== "string") {
+    throw new Error("skylink is not a sting.");
+  }
+
+  if (skylink === "") {
+    return skylink;
+  }
+  if (!skylink.startsWith(URI_SKYNET_PREFIX)) {
+    skylink = `${URI_SKYNET_PREFIX}${skylink}`;
+  }
+  return skylink;
+}
+
+/**
  * Uploads only jsonData from in-memory to Skynet for SkyDB V1 and V2.
  *
  * @param {string|Buffer} data - The data to upload, either a string or raw bytes.
  * @param {string} filename - The filename to use on Skynet.
  * @param {Object} [customOptions={}] - Configuration options.
- * @returns - The skylink and shortskylink is a trimUriPrefix from skylink
+ * @returns - The skylink and shortSkylink is a trimUriPrefix from skylink
  */
-const uploadJSONdata = async function (client, fullData, dataKey, customOptions = {}) {
-  const opts = { ...defaultSkydbOptions, ...client.customOptions, ...customOptions };
+const uploadJsonData = async function (client, fullData, dataKey, customOptions = {}) {
+  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...client.customOptions, ...customOptions };
 
   // uploads in-memory data to skynet
   const params = {};
@@ -107,25 +139,26 @@ const uploadJSONdata = async function (client, fullData, dataKey, customOptions 
     params,
   });
 
-  // short_skylink is a trimUriPrefix from skylink
-  const short_skylink = response.data.skylink;
-  const skylink = uriSkynetPrefix + short_skylink;
+  // shortSkylink is a trimUriPrefix from skylink
+  const shortSkylink = response.data.skylink;
+  const skylink = URI_SKYNET_PREFIX + shortSkylink;
 
-  return { skylink: skylink, shortskylink: short_skylink };
+  return { skylink: formatSkylink(skylink), shortSkylink: shortSkylink };
 };
 
 module.exports = {
-  defaultOptions,
   MAX_REVISION,
   DEFAULT_BASE_OPTIONS,
   DEFAULT_GET_ENTRY_OPTIONS,
   DEFAULT_SET_ENTRY_OPTIONS,
-  defaultSkydbOptions,
+  DEFAULT_SKYDB_OPTIONS,
+  URI_SKYNET_PREFIX,
   JSON_RESPONSE_VERSION,
   buildSkynetJsonObject,
-  getPublicKeyfromPrivateKey,
+  getPublicKeyFromPrivateKey,
   BASE64_ENCODED_SKYLINK_SIZE,
   RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
-  uploadJSONdata,
+  formatSkylink,
+  uploadJsonData,
 };

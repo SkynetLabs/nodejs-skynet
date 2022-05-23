@@ -3,8 +3,8 @@ const { SkynetClient: BrowserSkynetClient } = require("skynet-js");
 
 const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
-const { nodejs_db_setJSON } = require("./skydb.js");
-const { nodejs_dbV2_setJSON } = require("./skydb_v2.js");
+const { setJSONdbV1 } = require("./skydb.js");
+const { setJSONdbV2 } = require("./skydb_v2.js");
 
 class SkynetClient {
   /**
@@ -57,7 +57,7 @@ class SkynetClient {
     // SkyDB
     this.db = {
       getJSON: browserClient.db.getJSON.bind(browserClient),
-      setJSON: nodejs_db_setJSON.bind(browserClient),
+      setJSON: setJSONdbV1.bind(browserClient),
       deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
       setDataLink: browserClient.db.setDataLink.bind(browserClient),
       getEntryData: browserClient.db.getEntryData.bind(browserClient),
@@ -69,7 +69,7 @@ class SkynetClient {
     // SkyDB V2
     this.dbV2 = {
       getJSON: browserClient.dbV2.getJSON.bind(browserClient),
-      setJSON: nodejs_dbV2_setJSON.bind(browserClient),
+      setJSON: setJSONdbV2.bind(browserClient),
       deleteJSON: browserClient.dbV2.deleteJSON.bind(browserClient),
       setDataLink: browserClient.dbV2.setDataLink.bind(browserClient),
       getEntryData: browserClient.dbV2.getEntryData.bind(browserClient),

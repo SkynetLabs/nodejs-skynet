@@ -11,27 +11,27 @@ const fs = require("fs");
 const process = require("process");
 
 (async () => {
-  const { SkynetClient, genKeyPairFromSeed } = require("..");
+  const { SkynetClient, genKeyPairFromSeed, formatSkylink } = require("..");
   const client = new SkynetClient("https://siasky.net");
 
   const dataKey = process.argv[2];
   console.log("\n\ndataKey =  " + dataKey);
-  const SeedKey = process.argv[3];
-  console.log("SeedKey =  " + SeedKey);
+  const seedKey = process.argv[3];
+  console.log("seedKey =  " + seedKey);
 
   let data;
-  const path_dataJson = process.argv[4];
+  const pathJsonData = process.argv[4];
   if (process.argv[4] === undefined) {
     console.log("Default dataJson used.");
     data = { example: "This is some example JSON data" };
   } else {
-    console.log("path_dataJson from command line argument");
-    const rawJSONdata = fs.readFileSync(path_dataJson);
+    console.log("pathJsonData from command line argument");
+    const rawJSONdata = fs.readFileSync(pathJsonData);
     data = JSON.parse(rawJSONdata);
   }
   console.log("data: " + JSON.stringify(data));
 
-  const { publicKey, privateKey } = genKeyPairFromSeed(SeedKey);
+  const { publicKey, privateKey } = genKeyPairFromSeed(seedKey);
   console.log("\n\npublicKey: " + publicKey);
   console.log("privateKey: " + privateKey + "\n");
 
@@ -47,7 +47,7 @@ const process = require("process");
     .then((res) => {
       console.log("\n1. use db.setJSON to add new data.");
       console.log(`db.setJSON:`);
-      console.log(`Saved dataLink: ${res.dataLink}`);
+      console.log(`Saved dataLink: ${formatSkylink(res.dataLink)}`);
       console.log(`Saved Data: ${JSON.stringify(res.data)}`);
     })
     .catch((err) => {
@@ -60,7 +60,7 @@ const process = require("process");
     .then((data) => {
       console.log("\n2. use db.getJSON to get the data.");
       console.log(`db.getJSON:`);
-      console.log("Retrieved DataLink: " + data["dataLink"]);
+      console.log("Retrieved dataLink: " + formatSkylink(data["dataLink"]));
       console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
     })
     .catch((err) => {
@@ -83,7 +83,7 @@ const process = require("process");
     .then((data) => {
       console.log("\n4. use db.getJSON to check dataKey and data after deleteJSON.");
       console.log(`db.getJSON:`);
-      console.log("Retrieved DataLink: " + data["dataLink"]);
+      console.log("Retrieved dataLink: " + data["dataLink"]);
       console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
     })
     .catch((err) => {
@@ -106,7 +106,7 @@ const process = require("process");
     .then((data) => {
       console.log("\n6. use db.getJSON to check dataKey and data after setDataLink.");
       console.log(`db.getJSON:`);
-      console.log("Retrieved DataLink: " + data["dataLink"]);
+      console.log("Retrieved dataLink: " + formatSkylink(data["dataLink"]));
       console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
     })
     .catch((err) => {
@@ -141,7 +141,7 @@ const process = require("process");
     .then((data) => {
       console.log("\n9. use db.getRawBytes to get dataLink and data.");
       console.log(`db.getRawBytes:`);
-      console.log("Retrieved DataLink: " + data["dataLink"]);
+      console.log("Retrieved dataLink: " + formatSkylink(data["dataLink"]));
       console.log("Retrieved data: " + data["data"] + "\n");
     })
     .catch((err) => {
@@ -176,7 +176,7 @@ const process = require("process");
     .then((data) => {
       console.log("\n12. use db.getRawBytes to check data after db.deleteEntryData.");
       console.log(`db.getRawBytes:`);
-      console.log("Retrieved DataLink: " + data["dataLink"]);
+      console.log("Retrieved dataLink: " + data["dataLink"]);
       console.log("Retrieved data: " + data["data"] + "\n");
     })
     .catch((err) => {
