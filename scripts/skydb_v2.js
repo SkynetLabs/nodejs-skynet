@@ -23,7 +23,7 @@ const process = require("process");
   const pathJsonData = process.argv[4];
   if (process.argv[4] === undefined) {
     console.log("Default dataJson used.");
-    data = { example: "This is some example JSON data" };
+    data = { example: "This is some example JSON data for SkyDB V2. " };
   } else {
     console.log("pathJsonData from command line argument");
     const rawJSONdata = fs.readFileSync(pathJsonData);
