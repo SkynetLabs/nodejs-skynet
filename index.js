@@ -2,6 +2,7 @@
 
 const { SkynetClient } = require("./src/client");
 const { defaultOptions, defaultSkynetPortalUrl, defaultPortalUrl, uriSkynetPrefix } = require("./src/utils");
+const { formatSkylink } = require("./src/defaults");
 
 const { genKeyPairAndSeed, genKeyPairFromSeed, getEntryLink } = require("skynet-js");
 
@@ -12,6 +13,7 @@ module.exports = {
   defaultPortalUrl,
   defaultSkynetPortalUrl,
   uriSkynetPrefix,
+  formatSkylink,
 
   // Re-export utilities from skynet-js.
 

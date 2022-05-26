@@ -3,6 +3,9 @@ const { SkynetClient: BrowserSkynetClient } = require("skynet-js");
 
 const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
+const { setJSONdbV1 } = require("./skydb.js");
+const { setJSONdbV2 } = require("./skydb_v2.js");
+
 class SkynetClient {
   /**
    * The Skynet Client which can be used to access Skynet.
@@ -53,7 +56,27 @@ class SkynetClient {
 
     // SkyDB
     this.db = {
+      getJSON: browserClient.db.getJSON.bind(browserClient),
+      setJSON: setJSONdbV1.bind(browserClient),
+      deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
       setDataLink: browserClient.db.setDataLink.bind(browserClient),
+      getEntryData: browserClient.db.getEntryData.bind(browserClient),
+      setEntryData: browserClient.db.setEntryData.bind(browserClient),
+      deleteEntryData: browserClient.db.deleteEntryData.bind(browserClient),
+      getRawBytes: browserClient.db.getRawBytes.bind(browserClient),
+    };
+
+    // SkyDB V2
+    this.dbV2 = {
+      getJSON: browserClient.dbV2.getJSON.bind(browserClient),
+      setJSON: setJSONdbV2.bind(browserClient),
+      deleteJSON: browserClient.dbV2.deleteJSON.bind(browserClient),
+      setDataLink: browserClient.dbV2.setDataLink.bind(browserClient),
+      getEntryData: browserClient.dbV2.getEntryData.bind(browserClient),
+      setEntryData: browserClient.dbV2.setEntryData.bind(browserClient),
+      deleteEntryData: browserClient.dbV2.deleteEntryData.bind(browserClient),
+      getRawBytes: browserClient.dbV2.getRawBytes.bind(browserClient),
+      revisionNumberCache: browserClient.dbV2.revisionNumberCache,
     };
 
     // Registry
