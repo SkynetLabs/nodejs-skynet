@@ -5,7 +5,6 @@
   "repository": "https://github.com/SkynetLabs/nodejs-skynet",
   "main": "index.js",
   "scripts": {
-    "build": "echo 'No build script configured.'",
     "test": "jest",
     "format": "prettier --write .",
     "lint": "yarn lint:eslint",
