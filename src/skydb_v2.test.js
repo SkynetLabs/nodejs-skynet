@@ -1,8 +1,4 @@
-const axios = require("axios");
-
 const { SkynetClient, genKeyPairAndSeed, formatSkylink } = require("../index");
-
-jest.mock("axios");
 
 const dataKey = "testdatakey";
 const data = { example: "This is some example JSON data for SkyDB V2." };
@@ -20,10 +16,6 @@ const rawBytesData =
 
 jest.setTimeout(60000); // 60 second timeout
 jest.useRealTimers();
-
-beforeEach(() => {
-  axios.mockResolvedValue({ data: { skylink } });
-});
 
 describe("SkyDB V2", () => {
   describe("dbV2.getJSON", () => {
