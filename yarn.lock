@@ -3148,19 +3148,6 @@ tslib@^2.1.0, tslib@^2.3.1:
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.3.1.tgz"
   integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
 
-tus-js-client@^2.3.0:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/tus-js-client/-/tus-js-client-2.3.2.tgz#ec7007cf0d9a1eecf57977b7a015404c5e9cb2a6"
-  integrity sha512-5a2rm7gp+G7Z+ZB0AO4PzD/dwczB3n1fZeWO5W8AWLJ12RRk1rY4Aeb2VAYX9oKGE+/rGPrdxoFPA/vDSVKnpg==
-  dependencies:
-    buffer-from "^1.1.2"
-    combine-errors "^3.0.3"
-    is-stream "^2.0.0"
-    js-base64 "^2.6.1"
-    lodash.throttle "^4.1.1"
-    proper-lockfile "^2.0.1"
-    url-parse "^1.5.7"
-
 tweetnacl@^1.0.3:
   version "1.0.3"
   resolved "https://registry.npmjs.org/tweetnacl/-/tweetnacl-1.0.3.tgz"
