@@ -1,6 +1,7 @@
 const axios = require("axios");
 
-const { SkynetClient, genKeyPairAndSeed, formatSkylink } = require("../index");
+const { client } = require(".");
+const { genKeyPairAndSeed, formatSkylink } = require("../index");
 
 jest.mock("axios");
 
@@ -9,7 +10,6 @@ const data = { example: "This is some example JSON data for SkyDB V2." };
 const { publicKey, privateKey } = genKeyPairAndSeed();
 
 const skylink = "AAB1QJWQV0y2ynDXnJvOt0uh-THq-pJj2_layW5fjPXhTQ";
-const client = new SkynetClient("https://siasky.net");
 const dataLink = "sia://AAChv5I6FTTqd8_6mtIOgwd5AhxurcYY9OSc-FacWlurEw";
 const rawEntryData = Uint8Array.from([
   0, 0, 161, 191, 146, 58, 21, 52, 234, 119, 207, 250, 154, 210, 14, 131, 7, 121, 2, 28, 110, 173, 198, 24, 244, 228,
