@@ -57,6 +57,7 @@ class SkynetClient {
     // SkyDB
     this.db = {
       getJSON: browserClient.db.getJSON.bind(browserClient),
+      // We define `setJSONdbV1` in this SDK, so bind it to the current client.
       setJSON: setJSONdbV1.bind(this),
       deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
       setDataLink: browserClient.db.setDataLink.bind(browserClient),
@@ -69,6 +70,7 @@ class SkynetClient {
     // SkyDB V2
     this.dbV2 = {
       getJSON: browserClient.dbV2.getJSON.bind(browserClient),
+      // We define `setJSONdbV1` in this SDK, so bind it to the current client.
       setJSON: setJSONdbV2.bind(this),
       deleteJSON: browserClient.dbV2.deleteJSON.bind(browserClient),
       setDataLink: browserClient.dbV2.setDataLink.bind(browserClient),
