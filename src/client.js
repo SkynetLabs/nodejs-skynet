@@ -5,6 +5,7 @@ const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
 const { setJSONdbV1 } = require("./skydb.js");
 const { setJSONdbV2 } = require("./skydb_v2.js");
+const { downloadFileHns } = require("./downloadHns.js");
 
 class SkynetClient {
   /**
@@ -45,13 +46,33 @@ class SkynetClient {
     this.browserClient = browserClient;
 
     // Download
+    this.downloadFileHns = downloadFileHns.bind(browserClient);
     this.getSkylinkUrl = browserClient.getSkylinkUrl.bind(browserClient);
+    this.getHnsUrl = browserClient.getHnsUrl.bind(browserClient);
+    this.getHnsresUrl = browserClient.getHnsresUrl.bind(browserClient);
     this.getMetadata = browserClient.getMetadata.bind(browserClient);
+    this.getFileContent = browserClient.getFileContent.bind(browserClient);
+    this.getFileContentBinary = browserClient.getFileContentBinary.bind(browserClient);
+    this.getFileContentHns = browserClient.getFileContentHns.bind(browserClient);
+    this.getFileContentBinaryHns = browserClient.getFileContentBinaryHns.bind(browserClient);
+    this.openFile = browserClient.openFile.bind(browserClient);
+    this.openFileHns = browserClient.openFileHns.bind(browserClient);
+    this.resolveHns = browserClient.resolveHns.bind(browserClient);
+
+    // Pin
+    this.pinSkylink = browserClient.pinSkylink.bind(browserClient);
+
+    // MySky
+    this.extractDomain = browserClient.extractDomain.bind(browserClient);
+    this.getFullDomainUrl = browserClient.getFullDomainUrl.bind(browserClient);
+    this.loadMySky = browserClient.loadMySky.bind(browserClient);
 
     // File API
     this.file = {
+      getJSON: browserClient.file.getJSON.bind(browserClient),
       getEntryData: browserClient.file.getEntryData.bind(browserClient),
       getEntryLink: browserClient.file.getEntryLink.bind(browserClient),
+      getJSONEncrypted: browserClient.file.getJSONEncrypted.bind(browserClient),
     };
 
     // SkyDB

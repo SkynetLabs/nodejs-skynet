@@ -38,11 +38,15 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@skynetlabs/tus-js-client": "^2.4.1",
     "axios": "0.27.2",
+    "axios-mock-adapter": "^1.20.0",
     "form-data": "4.0.0",
+    "jsdom": "^19.0.0",
+    "global-jsdom": "^8.4.0",
     "mime": "^3.0.0",
-    "skynet-js": "^4.0.26-beta",
-    "tus-js-client": "^2.3.0",
+    "open": "^8.4.0",
+    "skynet-js": "^4.3.0",
     "url-join": "^4.0.1"
   },
   "devDependencies": {
