@@ -1,6 +1,5 @@
 "use strict";
 
-const FormData = require("form-data");
 const { sign } = require("tweetnacl");
 const { toByteArray } = require("base64-js");
 const { MAX_REVISION } = require("skynet-js");
@@ -73,6 +72,7 @@ const DEFAULT_GET_JSON_OPTIONS = {
   ...DEFAULT_BASE_OPTIONS,
   ...DEFAULT_GET_ENTRY_OPTIONS,
   ...DEFAULT_DOWNLOAD_OPTIONS,
+  endpointPath: "/skynet/skyfile",
   cachedDataLink: undefined,
 };
 
@@ -85,6 +85,7 @@ const DEFAULT_SET_JSON_OPTIONS = {
   ...DEFAULT_UPLOAD_OPTIONS,
   ...DEFAULT_GET_JSON_OPTIONS,
   ...DEFAULT_SET_ENTRY_OPTIONS,
+  endpointPath: "/skynet/skyfile",
 };
 
 /**
@@ -166,39 +167,6 @@ function formatSkylink(skylink) {
   return skylink;
 }
 
-/**
- * Uploads only jsonData from in-memory to Skynet for SkyDB V1 and V2.
- *
- * @param {string|Buffer} data - The data to upload, either a string or raw bytes.
- * @param {string} filename - The filename to use on Skynet.
- * @param {Object} [customOptions={}] - Configuration options.
- * @returns - The skylink and shortSkylink is a trimUriPrefix from skylink
- */
-const uploadJsonData = async function (client, fullData, dataKey, customOptions = {}) {
-  const opts = { ...DEFAULT_UPLOAD_OPTIONS, ...client.customOptions, ...customOptions };
-
-  // uploads in-memory data to skynet
-  const params = {};
-  if (opts.dryRun) params.dryrun = true;
-
-  const formData = new FormData();
-  formData.append(opts.portalFileFieldname, fullData, dataKey);
-
-  const response = await client.executeRequest({
-    ...opts,
-    method: "post",
-    data: formData,
-    headers: formData.getHeaders(),
-    params,
-  });
-
-  // shortSkylink is a trimUriPrefix from skylink
-  const shortSkylink = response.data.skylink;
-  const skylink = URI_SKYNET_PREFIX + shortSkylink;
-
-  return { skylink: formatSkylink(skylink), shortSkylink: shortSkylink };
-};
-
 module.exports = {
   MAX_REVISION,
   DEFAULT_BASE_OPTIONS,
@@ -217,6 +185,5 @@ module.exports = {
   RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
   formatSkylink,
-  uploadJsonData,
   TUS_CHUNK_SIZE,
 };

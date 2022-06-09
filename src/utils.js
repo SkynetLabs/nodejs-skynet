@@ -142,6 +142,7 @@ module.exports = {
   getFileMimeType,
   makeUrl,
   trimSiaPrefix,
+  trimPrefix,
   uriSkynetPrefix,
   walkDirectory,
 };

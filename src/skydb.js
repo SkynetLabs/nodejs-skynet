@@ -6,16 +6,15 @@ const {
   DEFAULT_SET_ENTRY_OPTIONS,
   DEFAULT_GET_JSON_OPTIONS,
   DEFAULT_SET_JSON_OPTIONS,
+  DEFAULT_UPLOAD_OPTIONS,
   buildSkynetJsonObject,
   getPublicKeyFromPrivateKey,
   RAW_SKYLINK_SIZE,
   decodeSkylinkBase64,
   formatSkylink,
-  uploadJsonData,
+  URI_SKYNET_PREFIX,
 } = require("./defaults");
-const {
-  extractOptions,
-} = require("./utils");
+const { extractOptions, trimPrefix } = require("./utils");
 
 /**
  * Sets a JSON object at the registry entry corresponding to the privateKey and dataKey using SkyDB V1.
@@ -60,7 +59,8 @@ const getOrCreateRegistryEntry = async function (client, publicKey, dataKey, jso
   const fullData = JSON.stringify(skynetJson);
 
   // uploads in-memory data to skynet
-  const { skylink, shortSkylink } = await uploadJsonData(client, fullData, dataKey, opts);
+  const uploadOpts = extractOptions(opts, DEFAULT_UPLOAD_OPTIONS);
+  const skylink = await client.uploadData(fullData, dataKey, uploadOpts);
 
   // Fetch the current value to find out the revision.
   const getEntryOpts = extractOptions(opts, DEFAULT_GET_ENTRY_OPTIONS);
@@ -69,7 +69,8 @@ const getOrCreateRegistryEntry = async function (client, publicKey, dataKey, jso
   const revision = getNextRevisionFromEntry(signedEntry.entry);
 
   // Build the registry entry.
-  const rawDataLink = decodeSkylinkBase64(shortSkylink);
+  const dataLink = trimPrefix(skylink, URI_SKYNET_PREFIX);
+  const rawDataLink = decodeSkylinkBase64(dataLink);
   if (rawDataLink.length !== RAW_SKYLINK_SIZE) {
     throw new Error("rawDataLink is not 34 bytes long.");
   }

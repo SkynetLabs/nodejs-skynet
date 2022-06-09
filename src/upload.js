@@ -50,7 +50,6 @@ async function uploadSmallFile(client, stream, filename, opts) {
   const formData = new FormData();
   formData.append(opts.portalFileFieldname, stream, filename);
   const headers = formData.getHeaders();
-  console.log(headers);
 
   const response = await client.executeRequest({
     ...opts,
