@@ -14,7 +14,7 @@ const rawEntryData = Uint8Array.from([
 const rawBytesData =
   "[123,34,95,100,97,116,97,34,58,123,34,101,120,97,109,112,108,101,34,58,34,84,104,105,115,32,105,115,32,115,111,109,101,32,101,120,97,109,112,108,101,32,74,83,79,78,32,100,97,116,97,32,50,46,34,125,44,34,95,118,34,58,50,125]";
 
-describe(`SkyDB V2 end to end integration tests for portal ${portal}`, () => {
+describe(`SkyDB V2 end to end integration tests for portal '${portal}'`, () => {
   describe("dbV2.getJSON", () => {
     it("should get jsonData from skydb", async () => {
       const receivedData = await client.dbV2.getJSON(publicKey, dataKey);
