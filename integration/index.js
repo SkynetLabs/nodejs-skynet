@@ -1,4 +1,13 @@
+const axios = require("axios");
+const axiosRetry = require("axios-retry");
 const { SkynetClient, DEFAULT_SKYNET_PORTAL_URL } = require("../index");
+
+// retry if we're getting rate limited
+axiosRetry(axios, {
+  retries: 10,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (e) => axiosRetry.isNetworkOrIdempotentRequestError(e) || e.response?.status === 429,
+});
 
 // To test a specific server.
 //

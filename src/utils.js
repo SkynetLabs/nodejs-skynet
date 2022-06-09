@@ -35,6 +35,31 @@ function defaultPortalUrl() {
 }
 
 /**
+ * Extract only the model's custom options from the given options.
+ *
+ * @param opts - The given options.
+ * @param model - The model options.
+ * @returns - The extracted custom options.
+ * @throws - If the given opts don't contain all properties of the model.
+ */
+function extractOptions(opts, model) {
+  const result = {};
+  for (const property in model) {
+    /* istanbul ignore next */
+    if (!Object.prototype.hasOwnProperty.call(model, property)) {
+      continue;
+    }
+    // Throw if the given options don't contain the model's property.
+    if (!Object.prototype.hasOwnProperty.call(opts, property)) {
+      throw new Error(`Property '${property}' not found`);
+    }
+    result[property] = opts[property];
+  }
+
+  return result;
+}
+
+/**
  * Get the file mime type. Try to guess the file type based on the extension.
  *
  * @param filename - The filename.
@@ -113,6 +138,7 @@ module.exports = {
   defaultOptions,
   defaultPortalUrl,
   defaultSkynetPortalUrl,
+  extractOptions,
   getFileMimeType,
   makeUrl,
   trimSiaPrefix,

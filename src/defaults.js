@@ -1,13 +1,26 @@
 "use strict";
+
 const FormData = require("form-data");
-const { defaultOptions } = require("./utils");
 const { sign } = require("tweetnacl");
 const { toByteArray } = require("base64-js");
 const { MAX_REVISION } = require("skynet-js");
 
+const { defaultOptions } = require("./utils");
+
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
+
+/**
+ * The tus chunk size is (4MiB - encryptionOverhead) * dataPieces, set in skyd.
+ */
+const TUS_CHUNK_SIZE = (1 << 22) * 10;
+
+/**
+ * The retry delays, in ms. Data is stored in skyd for up to 20 minutes, so the
+ * total delays should not exceed that length of time.
+ */
+const DEFAULT_TUS_RETRY_DELAYS = [0, 5000, 15000, 60000, 300000, 600000];
 
 const DEFAULT_BASE_OPTIONS = {
   APIKey: "",
@@ -17,6 +30,29 @@ const DEFAULT_BASE_OPTIONS = {
   onDownloadProgress: undefined,
   onUploadProgress: undefined,
   loginFn: undefined,
+};
+
+const DEFAULT_DOWNLOAD_OPTIONS = {
+  ...defaultOptions("/"),
+};
+
+const DEFAULT_GET_METADATA_OPTIONS = {
+  ...defaultOptions("/"),
+};
+
+const DEFAULT_UPLOAD_OPTIONS = {
+  ...defaultOptions("/skynet/skyfile"),
+  endpointLargeUpload: "/skynet/tus",
+
+  portalFileFieldname: "file",
+  portalDirectoryFileFieldname: "files[]",
+  customFilename: "",
+  customDirname: "",
+  dryRun: false,
+  errorPages: undefined,
+  largeFileSize: TUS_CHUNK_SIZE,
+  retryDelays: DEFAULT_TUS_RETRY_DELAYS,
+  tryFiles: undefined,
 };
 
 const DEFAULT_GET_ENTRY_OPTIONS = {
@@ -29,9 +65,26 @@ const DEFAULT_SET_ENTRY_OPTIONS = {
   endpointSetEntry: "/skynet/registry",
 };
 
-const DEFAULT_SKYDB_OPTIONS = {
-  ...defaultOptions("/skynet/skyfile"),
-  portalFileFieldname: "file",
+/**
+ * The default options for get JSON. Includes the default get entry and download
+ * options.
+ */
+const DEFAULT_GET_JSON_OPTIONS = {
+  ...DEFAULT_BASE_OPTIONS,
+  ...DEFAULT_GET_ENTRY_OPTIONS,
+  ...DEFAULT_DOWNLOAD_OPTIONS,
+  cachedDataLink: undefined,
+};
+
+/**
+ * The default options for set JSON. Includes the default upload, get JSON, and
+ * set entry options.
+ */
+const DEFAULT_SET_JSON_OPTIONS = {
+  ...DEFAULT_BASE_OPTIONS,
+  ...DEFAULT_UPLOAD_OPTIONS,
+  ...DEFAULT_GET_JSON_OPTIONS,
+  ...DEFAULT_SET_ENTRY_OPTIONS,
 };
 
 /**
@@ -122,7 +175,7 @@ function formatSkylink(skylink) {
  * @returns - The skylink and shortSkylink is a trimUriPrefix from skylink
  */
 const uploadJsonData = async function (client, fullData, dataKey, customOptions = {}) {
-  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...client.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_UPLOAD_OPTIONS, ...client.customOptions, ...customOptions };
 
   // uploads in-memory data to skynet
   const params = {};
@@ -149,9 +202,13 @@ const uploadJsonData = async function (client, fullData, dataKey, customOptions 
 module.exports = {
   MAX_REVISION,
   DEFAULT_BASE_OPTIONS,
+  DEFAULT_DOWNLOAD_OPTIONS,
+  DEFAULT_GET_METADATA_OPTIONS,
+  DEFAULT_UPLOAD_OPTIONS,
   DEFAULT_GET_ENTRY_OPTIONS,
   DEFAULT_SET_ENTRY_OPTIONS,
-  DEFAULT_SKYDB_OPTIONS,
+  DEFAULT_GET_JSON_OPTIONS,
+  DEFAULT_SET_JSON_OPTIONS,
   URI_SKYNET_PREFIX,
   JSON_RESPONSE_VERSION,
   buildSkynetJsonObject,
@@ -161,4 +218,5 @@ module.exports = {
   decodeSkylinkBase64,
   formatSkylink,
   uploadJsonData,
+  TUS_CHUNK_SIZE,
 };

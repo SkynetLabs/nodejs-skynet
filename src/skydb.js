@@ -4,7 +4,8 @@ const {
   MAX_REVISION,
   DEFAULT_GET_ENTRY_OPTIONS,
   DEFAULT_SET_ENTRY_OPTIONS,
-  DEFAULT_SKYDB_OPTIONS,
+  DEFAULT_GET_JSON_OPTIONS,
+  DEFAULT_SET_JSON_OPTIONS,
   buildSkynetJsonObject,
   getPublicKeyFromPrivateKey,
   RAW_SKYLINK_SIZE,
@@ -12,6 +13,9 @@ const {
   formatSkylink,
   uploadJsonData,
 } = require("./defaults");
+const {
+  extractOptions,
+} = require("./utils");
 
 /**
  * Sets a JSON object at the registry entry corresponding to the privateKey and dataKey using SkyDB V1.
@@ -25,13 +29,14 @@ const {
  * @deprecated - Use of this method may result in data race bugs. Reworking your application to use `client.dbV2.setJSON` is recommended.
  */
 const setJSONdbV1 = async function (privateKey, dataKey, json, customOptions = {}) {
-  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_SET_JSON_OPTIONS, ...this.customOptions, ...customOptions };
 
   const publicKey = getPublicKeyFromPrivateKey(privateKey);
   const { entry, dataLink } = await getOrCreateRegistryEntry(this, publicKey, dataKey, json, opts);
 
   // Update the registry.
-  await this.registry.setEntry(privateKey, entry, DEFAULT_SET_ENTRY_OPTIONS);
+  const setEntryOpts = extractOptions(opts, DEFAULT_SET_ENTRY_OPTIONS);
+  await this.registry.setEntry(privateKey, entry, setEntryOpts);
 
   return { data: json, dataLink: formatSkylink(dataLink) };
 };
@@ -48,7 +53,7 @@ const setJSONdbV1 = async function (privateKey, dataKey, json, customOptions = {
  * @throws - Will throw if the revision is already the maximum value.
  */
 const getOrCreateRegistryEntry = async function (client, publicKey, dataKey, json, customOptions = {}) {
-  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...client.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_GET_JSON_OPTIONS, ...client.customOptions, ...customOptions };
 
   // Set the hidden _data and _v fields.
   const skynetJson = await buildSkynetJsonObject(json);
@@ -58,7 +63,8 @@ const getOrCreateRegistryEntry = async function (client, publicKey, dataKey, jso
   const { skylink, shortSkylink } = await uploadJsonData(client, fullData, dataKey, opts);
 
   // Fetch the current value to find out the revision.
-  const signedEntry = await client.registry.getEntry(publicKey, dataKey, DEFAULT_GET_ENTRY_OPTIONS);
+  const getEntryOpts = extractOptions(opts, DEFAULT_GET_ENTRY_OPTIONS);
+  const signedEntry = await client.registry.getEntry(publicKey, dataKey, getEntryOpts);
 
   const revision = getNextRevisionFromEntry(signedEntry.entry);
 

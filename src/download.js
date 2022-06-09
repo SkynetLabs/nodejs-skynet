@@ -4,16 +4,9 @@
 
 const fs = require("fs");
 
-const { defaultOptions, trimSiaPrefix } = require("./utils");
+const { trimSiaPrefix } = require("./utils");
 const { SkynetClient } = require("./client");
-
-const defaultDownloadOptions = {
-  ...defaultOptions("/"),
-};
-
-const defaultGetMetadataOptions = {
-  ...defaultOptions("/"),
-};
+const { DEFAULT_DOWNLOAD_OPTIONS } = require("./defaults");
 
 /**
  * Downloads in-memory data from a skylink.
@@ -23,7 +16,7 @@ const defaultGetMetadataOptions = {
  * @returns - The data.
  */
 SkynetClient.prototype.downloadData = async function (skylink, customOptions = {}) {
-  const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_DOWNLOAD_OPTIONS, ...this.customOptions, ...customOptions };
 
   skylink = trimSiaPrefix(skylink);
 
@@ -37,7 +30,7 @@ SkynetClient.prototype.downloadData = async function (skylink, customOptions = {
 };
 
 SkynetClient.prototype.downloadFile = function (path, skylink, customOptions = {}) {
-  const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_DOWNLOAD_OPTIONS, ...this.customOptions, ...customOptions };
 
   skylink = trimSiaPrefix(skylink);
 

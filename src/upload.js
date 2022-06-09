@@ -7,33 +7,8 @@ const p = require("path");
 const { Upload } = require("tus-js-client");
 
 const { buildRequestHeaders, SkynetClient } = require("./client");
-const { defaultOptions, getFileMimeType, makeUrl, walkDirectory, uriSkynetPrefix } = require("./utils");
-
-/**
- * The tus chunk size is (4MiB - encryptionOverhead) * dataPieces, set in skyd.
- */
-const TUS_CHUNK_SIZE = (1 << 22) * 10;
-
-/**
- * The retry delays, in ms. Data is stored in skyd for up to 20 minutes, so the
- * total delays should not exceed that length of time.
- */
-const DEFAULT_TUS_RETRY_DELAYS = [0, 5000, 15000, 60000, 300000, 600000];
-
-const defaultUploadOptions = {
-  ...defaultOptions("/skynet/skyfile"),
-  endpointLargeUpload: "/skynet/tus",
-
-  portalFileFieldname: "file",
-  portalDirectoryFileFieldname: "files[]",
-  customFilename: "",
-  customDirname: "",
-  dryRun: false,
-  errorPages: undefined,
-  largeFileSize: TUS_CHUNK_SIZE,
-  retryDelays: DEFAULT_TUS_RETRY_DELAYS,
-  tryFiles: undefined,
-};
+const { DEFAULT_UPLOAD_OPTIONS, TUS_CHUNK_SIZE } = require("./defaults");
+const { getFileMimeType, makeUrl, walkDirectory, uriSkynetPrefix } = require("./utils");
 
 /**
  * Uploads in-memory data to Skynet.
@@ -44,7 +19,7 @@ const defaultUploadOptions = {
  * @returns - The skylink.
  */
 SkynetClient.prototype.uploadData = async function (data, filename, customOptions = {}) {
-  const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_UPLOAD_OPTIONS, ...this.customOptions, ...customOptions };
 
   const sizeInBytes = data.length;
 
@@ -55,7 +30,7 @@ SkynetClient.prototype.uploadData = async function (data, filename, customOption
 };
 
 SkynetClient.prototype.uploadFile = async function (path, customOptions = {}) {
-  const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_UPLOAD_OPTIONS, ...this.customOptions, ...customOptions };
 
   const stat = await fs.promises.stat(path);
   const sizeInBytes = stat.size;
@@ -74,12 +49,14 @@ async function uploadSmallFile(client, stream, filename, opts) {
 
   const formData = new FormData();
   formData.append(opts.portalFileFieldname, stream, filename);
+  const headers = formData.getHeaders();
+  console.log(headers);
 
   const response = await client.executeRequest({
     ...opts,
     method: "post",
     data: formData,
-    headers: formData.getHeaders(),
+    headers,
     params,
   });
 
@@ -135,7 +112,7 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
 }
 
 SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {}) {
-  const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_UPLOAD_OPTIONS, ...this.customOptions, ...customOptions };
 
   // Check if there is a directory at given path.
   const stat = await fs.promises.stat(path);
