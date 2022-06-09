@@ -18,4 +18,5 @@ const client = new SkynetClient(portal, customOptions);
 
 module.exports = {
   client,
+  portal,
 };
