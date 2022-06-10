@@ -4,7 +4,7 @@ const FormData = require("form-data");
 const fs = require("fs");
 const p = require("path");
 
-const { Upload } = require("tus-js-client");
+const { Upload } = require("@skynetlabs/tus-js-client");
 
 const { buildRequestHeaders, SkynetClient } = require("./client");
 const { DEFAULT_UPLOAD_OPTIONS, TUS_CHUNK_SIZE } = require("./defaults");
