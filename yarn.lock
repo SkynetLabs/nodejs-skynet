@@ -2891,9 +2891,9 @@ sjcl@^1.0.8:
   integrity sha512-LzIjEQ0S0DpIgnxMEayM1rq9aGwGRG4OnZhCdjx7glTaJtf4zRfpg87ImfjSJjoW9vKpagd82McDOwbRT5kQKQ==
 
 skynet-js@^4.2.3-beta:
-  version "4.2.3-beta"
-  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.2.3-beta.tgz#61310f061a5bcf47bd6ba1168739e88581ee7b00"
-  integrity sha512-5CHpA5FIgir+xuLCqCttb2gdbp69ctcYmV+4Th1rwSXoDNNyq3Q/SvdBaArceKUvQaMlbLVWhCZFRoxgPknY7A==
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.3.0.tgz#57d471dfb3ffc0f2e4c8d370a888b0498f8f6d4a"
+  integrity sha512-fkaKqHCheQ6tseL7keEU7v5IxwAlfROMMMYPcbo64n9SHfsVXjPmW5wowc6OgmpB5Mt5k4EMVlIrGqF2VbizIw==
   dependencies:
     "@skynetlabs/tus-js-client" "^2.4.1"
     async-mutex "^0.3.2"
