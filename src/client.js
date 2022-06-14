@@ -62,11 +62,6 @@ class SkynetClient {
     // Pin
     this.pinSkylink = browserClient.pinSkylink.bind(browserClient);
 
-    // MySky
-    this.extractDomain = browserClient.extractDomain.bind(browserClient);
-    this.getFullDomainUrl = browserClient.getFullDomainUrl.bind(browserClient);
-    this.loadMySky = browserClient.loadMySky.bind(browserClient);
-
     // File API
     this.file = {
       getJSON: browserClient.file.getJSON.bind(browserClient),
@@ -78,7 +73,8 @@ class SkynetClient {
     // SkyDB
     this.db = {
       getJSON: browserClient.db.getJSON.bind(browserClient),
-      setJSON: setJSONdbV1.bind(browserClient),
+      // We define `setJSONdbV1` in this SDK, so bind it to the current client.
+      setJSON: setJSONdbV1.bind(this),
       deleteJSON: browserClient.db.deleteJSON.bind(browserClient),
       setDataLink: browserClient.db.setDataLink.bind(browserClient),
       getEntryData: browserClient.db.getEntryData.bind(browserClient),
@@ -90,7 +86,8 @@ class SkynetClient {
     // SkyDB V2
     this.dbV2 = {
       getJSON: browserClient.dbV2.getJSON.bind(browserClient),
-      setJSON: setJSONdbV2.bind(browserClient),
+      // We define `setJSONdbV1` in this SDK, so bind it to the current client.
+      setJSON: setJSONdbV2.bind(this),
       deleteJSON: browserClient.dbV2.deleteJSON.bind(browserClient),
       setDataLink: browserClient.dbV2.setDataLink.bind(browserClient),
       getEntryData: browserClient.dbV2.getEntryData.bind(browserClient),

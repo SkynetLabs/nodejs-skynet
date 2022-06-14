@@ -2,12 +2,12 @@
 
 const fs = require("fs");
 
-const { DEFAULT_DOWNLOAD_OPTIONS } = require("./defaults");
+const { DEFAULT_DOWNLOAD_HNS_OPTIONS } = require("./defaults");
 
 const downloadFileHns = async function (path, domain, customOptions = {}) {
-  const opts = { ...DEFAULT_DOWNLOAD_OPTIONS, ...this.customOptions, ...customOptions };
+  const opts = { ...DEFAULT_DOWNLOAD_HNS_OPTIONS, ...this.customOptions, ...customOptions };
 
-  const url = await this.getHnsUrl(domain, opts);
+  const url = await this.getHnsUrl(domain);
 
   new Promise((resolve, reject) => {
     this.executeRequest({

@@ -9,7 +9,8 @@ const {
   getEntryUrlForPortal,
   JsonData,
 } = require("skynet-js");
-const { toHexString, getSettledValues, JSONResponse } = require("./defaults");
+const { getSettledValues, JSONResponse } = require("./defaults");
+const { toHexString } = require("./utils");
 
 // Generated with genKeyPairFromSeed("insecure test seed")
 const [publicKey, privateKey] = [

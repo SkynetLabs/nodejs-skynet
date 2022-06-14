@@ -19,6 +19,7 @@ Types of changes:
 ### Added
 
 - Add `uploadData` and `downloadData`
+- Add SkyDB and SkyDB V2 (accessed with `client.db` and `client.dbV2`). By @parajbs in https://github.com/SkynetLabs/nodejs-skynet/pull/140
 
 ## [2.5.1]
 

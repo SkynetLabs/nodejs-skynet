@@ -1,29 +1,18 @@
 "use strict";
-const FormData = require("form-data");
-const parse = require("url-parse");
-const base32Decode = require("base32-decode");
-const { defaultOptions } = require("./utils");
-const { sign } = require("tweetnacl");
+
+//const { sign } = require("tweetnacl");
 const { toByteArray } = require("base64-js");
-const { MAX_REVISION, parseSkylink, JsonData, getFullDomainUrlForPortal } = require("skynet-js");
+const { MAX_REVISION, JsonData } = require("skynet-js");
+//const parse = require("url-parse");
+const base32Decode = require("base32-decode");
+
+const { defaultOptions, trimUriPrefix, validateString, throwValidationError } = require("./utils");
 
 const open = require("open");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const virtualConsole = new jsdom.VirtualConsole();
-virtualConsole.sendTo(console);
 require("global-jsdom")();
-global.document = new JSDOM(`...`, {
-  url: "http://localhost/",
-  referrer: "http://localhost/",
-  contentType: "text/html",
-  includeNodeLocations: true,
-  storageQuota: 10000000,
-  resources: "usable",
-  pretendToBeVisual: true,
-  runScripts: "dangerously",
-  virtualConsole: virtualConsole,
-}).window.document;
+global.document = new JSDOM(`...`).window.document;
 global.window = global.document.defaultView;
 global.navigator = global.document.defaultView.navigator;
 global.window.open = function (url) {
@@ -33,6 +22,17 @@ global.window.open = function (url) {
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
+
+/**
+ * The tus chunk size is (4MiB - encryptionOverhead) * dataPieces, set in skyd.
+ */
+const TUS_CHUNK_SIZE = (1 << 22) * 10;
+
+/**
+ * The retry delays, in ms. Data is stored in skyd for up to 20 minutes, so the
+ * total delays should not exceed that length of time.
+ */
+const DEFAULT_TUS_RETRY_DELAYS = [0, 5000, 15000, 60000, 300000, 600000];
 
 const DEFAULT_BASE_OPTIONS = {
   APIKey: "",
@@ -45,21 +45,26 @@ const DEFAULT_BASE_OPTIONS = {
 };
 
 const DEFAULT_DOWNLOAD_OPTIONS = {
-  ...DEFAULT_BASE_OPTIONS,
-  endpointDownload: "/",
-  download: false,
-  path: undefined,
-  range: undefined,
-  responseType: undefined,
-  subdomain: false,
+  ...defaultOptions("/"),
 };
 
-const DEFAULT_DOWNLOAD_HNS_OPTIONS = {
-  ...DEFAULT_DOWNLOAD_OPTIONS,
-  endpointDownloadHns: "hns",
-  hnsSubdomain: "hns",
-  // Default to subdomain format for HNS URLs.
-  subdomain: true,
+const DEFAULT_GET_METADATA_OPTIONS = {
+  ...defaultOptions("/"),
+};
+
+const DEFAULT_UPLOAD_OPTIONS = {
+  ...defaultOptions("/skynet/skyfile"),
+  endpointLargeUpload: "/skynet/tus",
+
+  portalFileFieldname: "file",
+  portalDirectoryFileFieldname: "files[]",
+  customFilename: "",
+  customDirname: "",
+  dryRun: false,
+  errorPages: undefined,
+  largeFileSize: TUS_CHUNK_SIZE,
+  retryDelays: DEFAULT_TUS_RETRY_DELAYS,
+  tryFiles: undefined,
 };
 
 const DEFAULT_GET_ENTRY_OPTIONS = {
@@ -72,95 +77,34 @@ const DEFAULT_SET_ENTRY_OPTIONS = {
   endpointSetEntry: "/skynet/registry",
 };
 
-const DEFAULT_SKYDB_OPTIONS = {
-  ...defaultOptions("/skynet/skyfile"),
-  portalFileFieldname: "file",
+const DEFAULT_DOWNLOAD_HNS_OPTIONS = {
+  ...DEFAULT_DOWNLOAD_OPTIONS,
+  endpointDownloadHns: "hns",
+  hnsSubdomain: "hns",
 };
 
 /**
- * Removes a prefix from the beginning of the string.
- *
- * @param str - The string to process.
- * @param prefix - The prefix to remove.
- * @param [limit] - Maximum amount of times to trim. No limit by default.
- * @returns - The processed string.
+ * The default options for get JSON. Includes the default get entry and download
+ * options.
  */
-const trimPrefix = function (str, prefix, limit) {
-  while (str.startsWith(prefix)) {
-    if (limit !== undefined && limit <= 0) {
-      break;
-    }
-    str = str.slice(prefix.length);
-    if (limit) {
-      limit -= 1;
-    }
-  }
-  return str;
+const DEFAULT_GET_JSON_OPTIONS = {
+  ...DEFAULT_BASE_OPTIONS,
+  ...DEFAULT_GET_ENTRY_OPTIONS,
+  ...DEFAULT_DOWNLOAD_OPTIONS,
+  endpointPath: "/skynet/skyfile",
+  cachedDataLink: undefined,
 };
 
 /**
- * Removes a suffix from the end of the string.
- *
- * @param str - The string to process.
- * @param suffix - The suffix to remove.
- * @param [limit] - Maximum amount of times to trim. No limit by default.
- * @returns - The processed string.
+ * The default options for set JSON. Includes the default upload, get JSON, and
+ * set entry options.
  */
-const trimSuffix = function (str, suffix, limit) {
-  while (str.endsWith(suffix)) {
-    if (limit !== undefined && limit <= 0) {
-      break;
-    }
-    str = str.substring(0, str.length - suffix.length);
-    if (limit) {
-      limit -= 1;
-    }
-  }
-  return str;
-};
-
-/**
- * Removes slashes from the beginning and end of the string.
- *
- * @param str - The string to process.
- * @returns - The processed string.
- */
-const trimForwardSlash = function (str) {
-  return trimPrefix(trimSuffix(str, "/"), "/");
-};
-
-/**
- * Extracts the non-skylink part of the path from the url.
- *
- * @param url - The input URL.
- * @param skylink - The skylink to remove, if it is present.
- * @returns - The non-skylink part of the path.
- */
-const extractNonSkylinkPath = function (url, skylink) {
-  const parsed = parse(url, {});
-  let path = parsed.pathname.replace(skylink, ""); // Remove skylink to get the path.
-  // Ensure there are no leading or trailing slashes.
-  path = trimForwardSlash(path);
-  // Add back the slash, unless there is no path.
-  if (path !== "") {
-    path = `/${path}`;
-  }
-  return path;
-};
-
-/**
- * Convert a byte array to a hex string.
- *
- * @param byteArray - The byte array to convert.
- * @returns - The hex string.
- * @see {@link https://stackoverflow.com/a/44608819|Stack Overflow}
- */
-const toHexString = function (byteArray) {
-  let s = "";
-  byteArray.forEach(function (byte) {
-    s += ("0" + (byte & 0xff).toString(16)).slice(-2);
-  });
-  return s;
+const DEFAULT_SET_JSON_OPTIONS = {
+  ...DEFAULT_BASE_OPTIONS,
+  ...DEFAULT_UPLOAD_OPTIONS,
+  ...DEFAULT_GET_JSON_OPTIONS,
+  ...DEFAULT_SET_ENTRY_OPTIONS,
+  endpointPath: "/skynet/skyfile",
 };
 
 /**
@@ -171,34 +115,6 @@ const URI_SKYNET_PREFIX = "sia://";
 const JSON_RESPONSE_VERSION = 2;
 
 /**
- * Sets the hidden _data and _v fields on the given raw JSON data.
- *
- * @param data - The given JSON data.
- * @returns - The Skynet JSON data.
- */
-const buildSkynetJsonObject = function (data) {
-  return { _data: data, _v: JSON_RESPONSE_VERSION };
-};
-
-/**
- * Regex for JSON revision value without quotes.
- */
-const REGEX_REVISION_NO_QUOTES = /"revision":\s*([0-9]+)/;
-
-/**
- * Get the publicKey from privateKey.
- *
- * @param privateKey - The privateKey.
- * @returns - The publicKey.
- */
-const getPublicKeyFromPrivateKey = function (privateKey) {
-  const publicKey = Buffer.from(
-    sign.keyPair.fromSecretKey(Uint8Array.from(Buffer.from(privateKey, "hex"))).publicKey
-  ).toString("hex");
-  return publicKey;
-};
-
-/**
  * The string length of the Skylink after it has been encoded using base64.
  */
 const BASE64_ENCODED_SKYLINK_SIZE = 46;
@@ -207,6 +123,29 @@ const BASE64_ENCODED_SKYLINK_SIZE = 46;
  * The raw size in bytes of the data that gets put into a link.
  */
 const RAW_SKYLINK_SIZE = 34;
+
+/**
+ * Regex for JSON revision value without quotes.
+ */
+const REGEX_REVISION_NO_QUOTES = /"revision":\s*([0-9]+)/;
+
+/**
+ * The string length of the Skylink after it has been encoded using base32.
+ */
+const BASE32_ENCODED_SKYLINK_SIZE = 55;
+
+/**
+ * Returned when a string could not be decoded into a Skylink due to it having
+ * an incorrect size.
+ */
+const ERR_SKYLINK_INCORRECT_SIZE = "skylink has incorrect size";
+
+const BASE32_ENCODING_VARIANT = "RFC4648-HEX";
+
+const JSONResponse = {
+  data: JsonData | null,
+  dataLink: "" | null,
+};
 
 /**
  * Decodes the skylink encoded using base64 raw URL encoding to bytes.
@@ -226,12 +165,6 @@ function decodeSkylinkBase64(skylink) {
   return toByteArray(skylink);
 }
 
-/**
- * Formats the skylink by adding the sia: prefix.
- *
- * @param skylink - The skylink.
- * @returns - The formatted skylink.
- */
 function formatSkylink(skylink) {
   //validateString("skylink", skylink, "parameter");
   if (typeof skylink !== "string") {
@@ -248,155 +181,14 @@ function formatSkylink(skylink) {
 }
 
 /**
- * Uploads only jsonData from in-memory to Skynet for SkyDB V1 and V2.
+ * Sets the hidden _data and _v fields on the given raw JSON data.
  *
- * @param {string|Buffer} data - The data to upload, either a string or raw bytes.
- * @param {string} filename - The filename to use on Skynet.
- * @param {Object} [customOptions={}] - Configuration options.
- * @returns - The skylink and shortSkylink is a trimUriPrefix from skylink
+ * @param data - The given JSON data.
+ * @returns - The Skynet JSON data.
  */
-const uploadJsonData = async function (client, fullData, dataKey, customOptions = {}) {
-  const opts = { ...DEFAULT_SKYDB_OPTIONS, ...client.customOptions, ...customOptions };
-
-  // uploads in-memory data to skynet
-  const params = {};
-  if (opts.dryRun) params.dryrun = true;
-
-  const formData = new FormData();
-  formData.append(opts.portalFileFieldname, fullData, dataKey);
-
-  const response = await client.executeRequest({
-    ...opts,
-    method: "post",
-    data: formData,
-    headers: formData.getHeaders(),
-    params,
-  });
-
-  // shortSkylink is a trimUriPrefix from skylink
-  const shortSkylink = response.data.skylink;
-  const skylink = URI_SKYNET_PREFIX + shortSkylink;
-
-  return { skylink: formatSkylink(skylink), shortSkylink: shortSkylink };
+const buildSkynetJsonObject = function (data) {
+  return { _data: data, _v: JSON_RESPONSE_VERSION };
 };
-
-/**
- * Removes a URI prefix from the beginning of the string.
- *
- * @param str - The string to process.
- * @param prefix - The prefix to remove. Should contain double slashes, e.g. sia://.
- * @returns - The processed string.
- */
-const trimUriPrefix = function (str, prefix) {
-  const longPrefix = prefix.toLowerCase();
-  const shortPrefix = trimSuffix(longPrefix, "/");
-  // Make sure the trimming is case-insensitive.
-  const strLower = str.toLowerCase();
-  if (strLower.startsWith(longPrefix)) {
-    // longPrefix is exactly at the beginning
-    return str.slice(longPrefix.length);
-  }
-  if (strLower.startsWith(shortPrefix)) {
-    // else shortPrefix is exactly at the beginning
-    return str.slice(shortPrefix.length);
-  }
-  return str;
-};
-
-/**
- * The string length of the Skylink after it has been encoded using base32.
- */
-const BASE32_ENCODED_SKYLINK_SIZE = 55;
-
-/**
- * Throws an error for the given value
- *
- * @param name - The name of the value.
- * @param value - The actual value.
- * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
- * @param expected - The expected aspect of the value that could not be validated (e.g. "type 'string'" or "non-null").
- * @throws - Will always throw.
- */
-const throwValidationError = function (name, value, valueKind, expected) {
-  throw validationError(name, value, valueKind, expected);
-};
-
-/**
- * Returns an error for the given value
- *
- * @param name - The name of the value.
- * @param value - The actual value.
- * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
- * @param expected - The expected aspect of the value that could not be validated (e.g. "type 'string'" or "non-null").
- * @returns - The validation error.
- */
-const validationError = function (name, value, valueKind, expected) {
-  let actualValue;
-  if (value === undefined) {
-    actualValue = "type 'undefined'";
-  } else if (value === null) {
-    actualValue = "type 'null'";
-  } else {
-    actualValue = `type '${typeof value}', value '${value}'`;
-  }
-  return new Error(`Expected ${valueKind} '${name}' to be ${expected}, was ${actualValue}`);
-};
-
-/**
- * Validates the given value as a skylink string.
- *
- * @param name - The name of the value.
- * @param value - The actual value.
- * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
- * @returns - The validated and parsed skylink.
- * @throws - Will throw if not a valid skylink string.
- */
-const validateSkylinkString = function (name, value, valueKind) {
-  validateString(name, value, valueKind);
-
-  const parsedSkylink = parseSkylink(value);
-  if (parsedSkylink === null) {
-    throw validationError(name, value, valueKind, `valid skylink of type 'string'`);
-  }
-
-  return parsedSkylink;
-};
-
-/**
- * Validates the given value as a string.
- *
- * @param name - The name of the value.
- * @param value - The actual value.
- * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
- * @throws - Will throw if not a valid string.
- */
-const validateString = function (name, value, valueKind) {
-  if (typeof value !== "string") {
-    throwValidationError(name, value, valueKind, "type 'string'");
-  }
-};
-
-/**
- * Checks whether the raw data link matches the cached data link, if provided.
- *
- * @param rawDataLink - The raw, unformatted data link.
- * @param cachedDataLink - The cached data link, if provided.
- * @returns - Whether the cached data link is a match.
- * @throws - Will throw if the given cached data link is not a valid skylink.
- */
-const checkCachedDataLink = function (rawDataLink, cachedDataLink) {
-  if (cachedDataLink) {
-    cachedDataLink = validateSkylinkString("cachedDataLink", cachedDataLink, "optional parameter");
-    return rawDataLink === cachedDataLink;
-  }
-  return false;
-};
-
-/**
- * Returned when a string could not be decoded into a Skylink due to it having
- * an incorrect size.
- */
-const ERR_SKYLINK_INCORRECT_SIZE = "skylink has incorrect size";
 
 /**
  * Validates the given value as a string of the given length.
@@ -414,8 +206,6 @@ const validateStringLen = function (name, value, valueKind, len) {
     throwValidationError(name, value, valueKind, `type 'string' of length ${len}, was length ${actualLen}`);
   }
 };
-
-const BASE32_ENCODING_VARIANT = "RFC4648-HEX";
 
 /**
  * Decodes the skylink encoded using base32 encoding to bytes.
@@ -482,105 +272,30 @@ const getSettledValues = function (values) {
   return receivedValues;
 };
 
-const JSONResponse = {
-  data: JsonData | null,
-  dataLink: "" | null,
-};
-
-/**
- * Returns an array of arrays of all possible permutations by picking one
- * element out of each of the input arrays.
- *
- * @param arrays - Array of arrays.
- * @returns - Array of arrays of all possible permutations.
- * @see {@link https://gist.github.com/ssippe/1f92625532eef28be6974f898efb23ef#gistcomment-3530882}
- */
-const combineArrays = function (arrays) {
-  return arrays.reduce(
-    (accArrays, array) => accArrays.flatMap((accArray) => array.map((value) => [...accArray, value])),
-    [[]]
-  );
-};
-
-/**
- * Returns an array of strings of all possible permutations by picking one
- * string out of each of the input string arrays.
- *
- * @param arrays - Array of string arrays.
- * @returns - Array of strings of all possible permutations.
- */
-const combineStrings = function (arrays) {
-  return arrays.reduce((acc, array) => acc.flatMap((first) => array.map((second) => first.concat(second))));
-};
-
-/**
- * Returns a composed array with the given inputs and the expected output.
- *
- * @param inputs - The given inputs.
- * @param expected - The expected output for all the inputs.
- * @returns - The array of composed test cases.
- */
-const composeTestCases = function (inputs, expected) {
-  return inputs.map((input) => [input, expected]);
-};
-
-/**
- * Gets the URL for the current skapp on the preferred portal, if we're not on
- * the preferred portal already.
- *
- * @param skappDomain - The current page URL.
- * @param preferredPortalUrl - The preferred portal URL.
- * @returns - The URL for the current skapp on the preferred portal.
- */
-const getRedirectUrlOnPreferredPortal = async function (skappDomain, preferredPortalUrl) {
-  // Get the current skapp on the preferred portal.
-  return getFullDomainUrlForPortal(preferredPortalUrl, skappDomain);
-};
-
-/**
- * Returns whether we should redirect from the current portal to the preferred
- * portal. The protocol prefixes are allowed to be different and there can be
- * other differences like a trailing slash.
- *
- * @param currentFullDomain - The current domain.
- * @param preferredPortalUrl - The preferred portal URL.
- * @returns - Whether the two URLs are equal for the purposes of redirecting.
- */
-const shouldRedirectToPreferredPortalUrl = function (currentFullDomain, preferredPortalUrl) {
-  // Strip protocol and trailing slash (case-insensitive).
-  currentFullDomain = trimForwardSlash(currentFullDomain.replace(/https:\/\/|http:\/\//i, ""));
-  preferredPortalUrl = trimForwardSlash(preferredPortalUrl.replace(/https:\/\/|http:\/\//i, ""));
-  return !currentFullDomain.endsWith(preferredPortalUrl);
-};
-
 module.exports = {
   MAX_REVISION,
   DEFAULT_BASE_OPTIONS,
   DEFAULT_DOWNLOAD_OPTIONS,
   DEFAULT_DOWNLOAD_HNS_OPTIONS,
+  DEFAULT_GET_METADATA_OPTIONS,
+  DEFAULT_UPLOAD_OPTIONS,
   DEFAULT_GET_ENTRY_OPTIONS,
   DEFAULT_SET_ENTRY_OPTIONS,
-  DEFAULT_SKYDB_OPTIONS,
+  DEFAULT_GET_JSON_OPTIONS,
+  DEFAULT_SET_JSON_OPTIONS,
   URI_SKYNET_PREFIX,
   JSON_RESPONSE_VERSION,
-  buildSkynetJsonObject,
-  REGEX_REVISION_NO_QUOTES,
-  getPublicKeyFromPrivateKey,
   BASE64_ENCODED_SKYLINK_SIZE,
   RAW_SKYLINK_SIZE,
+  TUS_CHUNK_SIZE,
+  REGEX_REVISION_NO_QUOTES,
+  BASE32_ENCODED_SKYLINK_SIZE,
+  BASE32_ENCODING_VARIANT,
+  ERR_SKYLINK_INCORRECT_SIZE,
+  JSONResponse,
   decodeSkylinkBase64,
   formatSkylink,
-  uploadJsonData,
-  trimForwardSlash,
-  extractNonSkylinkPath,
-  checkCachedDataLink,
-  toHexString,
+  buildSkynetJsonObject,
   decodeSkylink,
   getSettledValues,
-  JSONResponse,
-  combineArrays,
-  combineStrings,
-  composeTestCases,
-  getRedirectUrlOnPreferredPortal,
-  shouldRedirectToPreferredPortalUrl,
 };

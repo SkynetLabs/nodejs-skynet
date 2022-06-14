@@ -220,7 +220,7 @@ if (!fs.existsSync(dir)) {
 
   async function main() {
     await downloadFile(defaultDownloadPath + "sia.pdf", usedSkylink);
-    await downloadFileHns(defaultDownloadPath + "dosen.html", usedHnsLink);
+    await downloadFileHns(defaultDownloadPath + usedHnsLink + ".html", usedHnsLink);
     await getSkylinkUrl(usedSkylink);
     await getHnsUrl(usedHnsLink);
     await getHnsresUrl(usedHnsLink);

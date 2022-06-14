@@ -13,7 +13,8 @@ const {
   MAX_ENTRY_LENGTH,
   JsonData,
 } = require("skynet-js");
-const { checkCachedDataLink, toHexString, decodeSkylink, getSettledValues, JSONResponse } = require("./defaults");
+const { decodeSkylink, getSettledValues, JSONResponse } = require("./defaults");
+const { checkCachedDataLink, toHexString } = require("./utils");
 
 // Generated with genKeyPairFromSeed("insecure test seed")
 const [publicKey, privateKey] = [

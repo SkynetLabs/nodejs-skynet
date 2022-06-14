@@ -2,7 +2,7 @@ const axios = require("axios");
 const tmp = require("tmp");
 
 const { SkynetClient, defaultPortalUrl } = require("../index");
-const { extractNonSkylinkPath, trimForwardSlash } = require("./defaults");
+const { extractNonSkylinkPath, trimForwardSlash } = require("./utils");
 
 jest.mock("axios");
 
@@ -131,7 +131,7 @@ describe("downloadFileHns", () => {
   it.each(validHnsLinkVariations)("should download with the correct link using hns link %s", async (input) => {
     const url = await client.downloadFileHns(tmpFile.name, input, { download: true, subdomain: true });
 
-    expect(url).toEqual(`${expectedHnsUrl}${attachment}`);
+    expect(url).toEqual(`${expectedHnsUrl}`);
     await tmpFile.removeCallback();
   });
 });

@@ -11,7 +11,8 @@ const {
   DELETION_ENTRY_DATA,
   MAX_ENTRY_LENGTH,
 } = require("skynet-js");
-const { REGEX_REVISION_NO_QUOTES, checkCachedDataLink } = require("./defaults");
+const { REGEX_REVISION_NO_QUOTES } = require("./defaults");
+const { checkCachedDataLink } = require("./utils");
 
 // Generated with genKeyPairFromSeed("insecure test seed")
 const [publicKey, privateKey] = [
