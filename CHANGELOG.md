@@ -14,11 +14,11 @@ Types of changes:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## Unreleased
+## [2.6.0]
 
 ### Added
 
-- Add `uploadData` and `downloadData`
+- Add `uploadData` and `downloadData`.
 - Add SkyDB and SkyDB V2 (accessed with `client.db` and `client.dbV2`). By @parajbs in https://github.com/SkynetLabs/nodejs-skynet/pull/140
 
 ## [2.5.1]

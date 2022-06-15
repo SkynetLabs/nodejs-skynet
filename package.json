@@ -1,6 +1,6 @@
 {
   "name": "@skynetlabs/skynet-nodejs",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "Skynet SDK",
   "repository": "https://github.com/SkynetLabs/nodejs-skynet",
   "main": "index.js",
