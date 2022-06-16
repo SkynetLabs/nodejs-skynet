@@ -40,6 +40,12 @@ const DEFAULT_DOWNLOAD_OPTIONS = {
   ...defaultOptions("/"),
 };
 
+const DEFAULT_DOWNLOAD_HNS_OPTIONS = {
+  ...DEFAULT_DOWNLOAD_OPTIONS,
+  endpointDownloadHns: "hns",
+  hnsSubdomain: "hns",
+};
+
 const DEFAULT_GET_METADATA_OPTIONS = {
   ...defaultOptions("/"),
 };
@@ -67,12 +73,6 @@ const DEFAULT_GET_ENTRY_OPTIONS = {
 const DEFAULT_SET_ENTRY_OPTIONS = {
   ...DEFAULT_BASE_OPTIONS,
   endpointSetEntry: "/skynet/registry",
-};
-
-const DEFAULT_DOWNLOAD_HNS_OPTIONS = {
-  ...DEFAULT_DOWNLOAD_OPTIONS,
-  endpointDownloadHns: "hns",
-  hnsSubdomain: "hns",
 };
 
 /**
