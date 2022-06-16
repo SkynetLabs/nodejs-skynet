@@ -4,9 +4,9 @@
 
 const fs = require("fs");
 
-const { trimSiaPrefix } = require("./utils");
 const { SkynetClient } = require("./client");
 const { DEFAULT_DOWNLOAD_OPTIONS } = require("./defaults");
+const { trimSiaPrefix } = require("./utils_string");
 
 /**
  * Downloads in-memory data from a skylink.

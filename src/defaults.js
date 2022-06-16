@@ -1,10 +1,15 @@
 "use strict";
 
-const { sign } = require("tweetnacl");
-const { toByteArray } = require("base64-js");
-const { MAX_REVISION } = require("skynet-js");
-
 const { defaultOptions } = require("./utils");
+
+const open = require("open");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+global.document = new JSDOM(`...`).window.document;
+global.window = global.document.defaultView;
+global.window.open = function (url) {
+  open(url);
+};
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -64,6 +69,12 @@ const DEFAULT_SET_ENTRY_OPTIONS = {
   endpointSetEntry: "/skynet/registry",
 };
 
+const DEFAULT_DOWNLOAD_HNS_OPTIONS = {
+  ...DEFAULT_DOWNLOAD_OPTIONS,
+  endpointDownloadHns: "hns",
+  hnsSubdomain: "hns",
+};
+
 /**
  * The default options for get JSON. Includes the default get entry and download
  * options.
@@ -89,34 +100,16 @@ const DEFAULT_SET_JSON_OPTIONS = {
 };
 
 /**
- * URI_SKYNET_PREFIX.
+ * The raw size in bytes of the data that gets put into a link.
  */
-const URI_SKYNET_PREFIX = "sia://";
+const RAW_SKYLINK_SIZE = 34;
 
-const JSON_RESPONSE_VERSION = 2;
-
-/**
- * Sets the hidden _data and _v fields on the given raw JSON data.
- *
- * @param data - The given JSON data.
- * @returns - The Skynet JSON data.
- */
-const buildSkynetJsonObject = function (data) {
-  return { _data: data, _v: JSON_RESPONSE_VERSION };
-};
+const BASE32_ENCODING_VARIANT = "RFC4648-HEX";
 
 /**
- * Get the publicKey from privateKey.
- *
- * @param privateKey - The privateKey.
- * @returns - The publicKey.
+ * The string length of the Skylink after it has been encoded using base32.
  */
-const getPublicKeyFromPrivateKey = function (privateKey) {
-  const publicKey = Buffer.from(
-    sign.keyPair.fromSecretKey(Uint8Array.from(Buffer.from(privateKey, "hex"))).publicKey
-  ).toString("hex");
-  return publicKey;
-};
+const BASE32_ENCODED_SKYLINK_SIZE = 55;
 
 /**
  * The string length of the Skylink after it has been encoded using base64.
@@ -124,66 +117,31 @@ const getPublicKeyFromPrivateKey = function (privateKey) {
 const BASE64_ENCODED_SKYLINK_SIZE = 46;
 
 /**
- * The raw size in bytes of the data that gets put into a link.
+ * Returned when a string could not be decoded into a Skylink due to it having
+ * an incorrect size.
  */
-const RAW_SKYLINK_SIZE = 34;
+const ERR_SKYLINK_INCORRECT_SIZE = "skylink has incorrect size";
 
 /**
- * Decodes the skylink encoded using base64 raw URL encoding to bytes.
- *
- * @param skylink - The encoded skylink.
- * @returns - The decoded bytes.
+ * Regex for JSON revision value without quotes.
  */
-function decodeSkylinkBase64(skylink) {
-  // Check if Skylink is 46 bytes long.
-  if (skylink.length !== BASE64_ENCODED_SKYLINK_SIZE) {
-    throw new Error("Skylink is not 46 bytes long.");
-  }
-  // Add padding.
-  skylink = `${skylink}==`;
-  // Convert from URL encoding.
-  skylink = skylink.replace(/-/g, "+").replace(/_/g, "/");
-  return toByteArray(skylink);
-}
-
-/**
- * Formats the skylink by adding the sia: prefix.
- *
- * @param skylink - The skylink.
- * @returns - The formatted skylink.
- */
-function formatSkylink(skylink) {
-  //validateString("skylink", skylink, "parameter");
-  if (typeof skylink !== "string") {
-    throw new Error("skylink is not a sting.");
-  }
-
-  if (skylink === "") {
-    return skylink;
-  }
-  if (!skylink.startsWith(URI_SKYNET_PREFIX)) {
-    skylink = `${URI_SKYNET_PREFIX}${skylink}`;
-  }
-  return skylink;
-}
+const REGEX_REVISION_NO_QUOTES = /"revision":\s*([0-9]+)/;
 
 module.exports = {
-  MAX_REVISION,
+  TUS_CHUNK_SIZE,
   DEFAULT_BASE_OPTIONS,
   DEFAULT_DOWNLOAD_OPTIONS,
+  DEFAULT_DOWNLOAD_HNS_OPTIONS,
   DEFAULT_GET_METADATA_OPTIONS,
   DEFAULT_UPLOAD_OPTIONS,
   DEFAULT_GET_ENTRY_OPTIONS,
   DEFAULT_SET_ENTRY_OPTIONS,
   DEFAULT_GET_JSON_OPTIONS,
   DEFAULT_SET_JSON_OPTIONS,
-  URI_SKYNET_PREFIX,
-  JSON_RESPONSE_VERSION,
-  buildSkynetJsonObject,
-  getPublicKeyFromPrivateKey,
-  BASE64_ENCODED_SKYLINK_SIZE,
   RAW_SKYLINK_SIZE,
-  decodeSkylinkBase64,
-  formatSkylink,
-  TUS_CHUNK_SIZE,
+  BASE32_ENCODING_VARIANT,
+  BASE32_ENCODED_SKYLINK_SIZE,
+  BASE64_ENCODED_SKYLINK_SIZE,
+  ERR_SKYLINK_INCORRECT_SIZE,
+  REGEX_REVISION_NO_QUOTES,
 };

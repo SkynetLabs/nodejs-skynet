@@ -5,6 +5,7 @@ const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
 const { setJSONdbV1 } = require("./skydb.js");
 const { setJSONdbV2 } = require("./skydb_v2.js");
+const { downloadFileHns } = require("./downloadHns.js");
 
 class SkynetClient {
   /**
@@ -45,16 +46,31 @@ class SkynetClient {
     this.browserClient = browserClient;
 
     // Download
+    this.downloadFileHns = downloadFileHns.bind(browserClient);
     this.getSkylinkUrl = browserClient.getSkylinkUrl.bind(browserClient);
+    this.getHnsUrl = browserClient.getHnsUrl.bind(browserClient);
+    this.getHnsresUrl = browserClient.getHnsresUrl.bind(browserClient);
     this.getMetadata = browserClient.getMetadata.bind(browserClient);
+    this.getFileContent = browserClient.getFileContent.bind(browserClient);
+    this.getFileContentBinary = browserClient.getFileContentBinary.bind(browserClient);
+    this.getFileContentHns = browserClient.getFileContentHns.bind(browserClient);
+    this.getFileContentBinaryHns = browserClient.getFileContentBinaryHns.bind(browserClient);
+    this.openFile = browserClient.openFile.bind(browserClient);
+    this.openFileHns = browserClient.openFileHns.bind(browserClient);
+    this.resolveHns = browserClient.resolveHns.bind(browserClient);
+
+    // Pin
+    this.pinSkylink = browserClient.pinSkylink.bind(browserClient);
 
     // File API
     this.file = {
+      getJSON: browserClient.file.getJSON.bind(browserClient),
       getEntryData: browserClient.file.getEntryData.bind(browserClient),
       getEntryLink: browserClient.file.getEntryLink.bind(browserClient),
+      getJSONEncrypted: browserClient.file.getJSONEncrypted.bind(browserClient),
     };
 
-    // SkyDB
+    // SkyDB v1 (deprecated)
     this.db = {
       getJSON: browserClient.db.getJSON.bind(browserClient),
       // We define `setJSONdbV1` in this SDK, so bind it to the current client.
@@ -67,7 +83,7 @@ class SkynetClient {
       getRawBytes: browserClient.db.getRawBytes.bind(browserClient),
     };
 
-    // SkyDB V2
+    // SkyDB v2
     this.dbV2 = {
       getJSON: browserClient.dbV2.getJSON.bind(browserClient),
       // We define `setJSONdbV1` in this SDK, so bind it to the current client.
@@ -78,6 +94,9 @@ class SkynetClient {
       setEntryData: browserClient.dbV2.setEntryData.bind(browserClient),
       deleteEntryData: browserClient.dbV2.deleteEntryData.bind(browserClient),
       getRawBytes: browserClient.dbV2.getRawBytes.bind(browserClient),
+
+      // Holds the cached revision numbers, protected by mutexes to prevent
+      // concurrent access.
       revisionNumberCache: browserClient.dbV2.revisionNumberCache,
     };
 
