@@ -2,10 +2,6 @@ const { SkynetClient, defaultPortalUrl, uriSkynetPrefix } = require("../index");
 const portalUrl = defaultPortalUrl();
 const client = new SkynetClient(portalUrl);
 
-const newTimeout = 60000;
-jest.setTimeout(newTimeout);
-jest.useRealTimers();
-
 describe(`File API integration tests for portal '${portalUrl}'`, () => {
   const userID = "89e5147864297b80f5ddf29711ba8c093e724213b0dcbefbc3860cc6d598cc35";
   const path = "snew.hns/asdf";

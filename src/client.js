@@ -55,8 +55,6 @@ class SkynetClient {
     this.getFileContentBinary = browserClient.getFileContentBinary.bind(browserClient);
     this.getFileContentHns = browserClient.getFileContentHns.bind(browserClient);
     this.getFileContentBinaryHns = browserClient.getFileContentBinaryHns.bind(browserClient);
-    this.openFile = browserClient.openFile.bind(browserClient);
-    this.openFileHns = browserClient.openFileHns.bind(browserClient);
     this.resolveHns = browserClient.resolveHns.bind(browserClient);
 
     // Pin

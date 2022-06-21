@@ -30,7 +30,7 @@
   let usedPathSeed;
   let usedMyskyJsonPath;
 
-  if ((process.argv[2] === null) | (process.argv[2] === undefined)) {
+  if (process.argv[2] === null || process.argv[2] === undefined) {
     usedUserId = defaultUserId;
     console.log("\n\n\nusedUserId =  " + usedUserId);
     usedPathSeed = defaultPathSeed;
@@ -67,7 +67,6 @@
       .then((res) => {
         console.log("\n\n2. use file.getJSONEncrypted to get the encrypted data.");
         console.log("data: " + JSON.stringify(res.data));
-        //console.log("dataLink: " + JSON.stringify(res.dataLink));
       })
       .catch((err) => {
         console.log("\n2. Get Error: ", err);

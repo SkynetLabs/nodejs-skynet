@@ -13,7 +13,7 @@ const {
 
 const { extractOptions, getPublicKeyFromPrivateKey, formatSkylink } = require("./utils");
 const { trimPrefix } = require("./utils_string");
-const { decodeSkylinkBase64 } = require("./encoding");
+const { decodeSkylinkBase64 } = require("./utils_encoding");
 const { buildSkynetJsonObject } = require("./skydb_v2");
 
 /**

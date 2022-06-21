@@ -12,8 +12,8 @@ const {
 
 const { extractOptions, getPublicKeyFromPrivateKey, formatSkylink } = require("./utils");
 const { trimPrefix } = require("./utils_string");
-const { validateSkylinkString } = require("./validation");
-const { decodeSkylinkBase64 } = require("./encoding");
+const { validateSkylinkString } = require("./utils_validation");
+const { decodeSkylinkBase64 } = require("./utils_encoding");
 
 const JSON_RESPONSE_VERSION = 2;
 

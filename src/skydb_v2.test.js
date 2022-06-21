@@ -4,6 +4,7 @@ const MockAdapter = require("axios-mock-adapter");
 const { SkynetClient } = require("../index");
 
 const {
+  stringToUint8ArrayUtf8,
   getSkylinkUrlForPortal,
   MAX_REVISION,
   DEFAULT_SKYNET_PORTAL_URL,
@@ -12,12 +13,13 @@ const {
   DELETION_ENTRY_DATA,
   MAX_ENTRY_LENGTH,
   JsonData,
+  JSONResponse,
 } = require("skynet-js");
 
 const { getSettledValues } = require("./utils_testing");
-const { toHexString } = require("./utils_string");
-const { decodeSkylink } = require("./encoding");
 const { checkCachedDataLink } = require("./skydb_v2");
+const { toHexString } = require("./utils_string");
+const { decodeSkylink } = require("./utils_encoding");
 
 // Generated with genKeyPairFromSeed("insecure test seed")
 const [publicKey, privateKey] = [
@@ -50,10 +52,6 @@ const entryData = {
   signature:
     "33d14d2889cb292142614da0e0ff13a205c4867961276001471d13b779fc9032568ddd292d9e0dff69d7b1f28be07972cc9d86da3cecf3adecb6f9b7311af809",
 };
-
-const newTimeout = 60000;
-jest.setTimeout(newTimeout);
-jest.useRealTimers();
 
 const headers = {
   "skynet-portal-api": portalUrl,
@@ -364,6 +362,17 @@ describe("getJSON/setJSON data race regression unit tests", () => {
   });
 
   const skylinkOld = "XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg";
+  const skylinkOldUrl = getSkylinkUrlForPortal(portalUrl, skylinkOld);
+  const dataOld = toHexString(stringToUint8ArrayUtf8(skylinkOld)); // hex-encoded skylink
+  const revisionOld = 0;
+  const entryDataOld = {
+    data: dataOld,
+    revision: revisionOld,
+    signature:
+      "921d30e860d51f13d1065ea221b29fc8d11cfe7fa0e32b5d5b8e13bee6f91cfa86fe6b12ca4cef7a90ba52d2c50efb62b241f383e9d7bb264558280e564faa0f",
+  };
+  const headersOld = { ...headers, "skynet-skylink": skylinkOld };
+
   const skylinkNew = skylink;
   const skylinkNewUrl = skylinkUrl;
   const dataNew = data; // hex-encoded skylink
@@ -378,9 +387,63 @@ describe("getJSON/setJSON data race regression unit tests", () => {
 
   const jsonOld = { message: 1 };
   const jsonNew = { message: 2 };
+  const skynetJsonOld = { _data: jsonOld, _v: 2 };
   const skynetJsonNew = { _data: jsonNew, _v: 2 };
 
+  const concurrentAccessError = "Concurrent access prevented in SkyDB";
   const higherRevisionError = "A higher revision number for this userID and path is already cached";
+
+  it("should not get old data when getJSON and setJSON are called simultaneously on the same client and getJSON doesn't fail", async () => {
+    // Create a new client with a fresh revision cache.
+    const client = new SkynetClient(portalUrl);
+
+    // Mock setJSON with the old skylink.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkOld, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+
+    // Set the data.
+    await client.dbV2.setJSON(privateKey, dataKey, jsonOld);
+
+    // Mock getJSON with the new entry data and the new skylink.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataNew));
+    mock.onGet(skylinkNewUrl).replyOnce(200, skynetJsonNew, headers);
+
+    // Mock setJSON with the new skylink.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkNew, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+
+    // Try to invoke the data race.
+    // Get the data while also calling setJSON.
+    //
+    // Use Promise.allSettled to wait for all promises to finish, or some mocked
+    // requests will hang around and interfere with the later tests.
+    const settledResults = await Promise.allSettled([
+      client.dbV2.getJSON(publicKey, dataKey),
+      client.dbV2.setJSON(privateKey, dataKey, jsonNew),
+    ]);
+
+    let data = JsonData | null;
+    try {
+      const values = getSettledValues(settledResults);
+      data = values[0].data;
+    } catch (e) {
+      // If any promises were rejected, check the error message.
+      if (e.message.includes(concurrentAccessError)) {
+        // The data race condition was avoided and we received the expected
+        // error. Return from test early.
+        return;
+      }
+
+      throw e;
+    }
+
+    // Data race did not occur, getJSON should have latest JSON.
+    expect(data).toEqual(jsonNew);
+
+    // assert our request history contains the expected amount of requests
+    expect(mock.history.get.length).toBe(2);
+    expect(mock.history.post.length).toBe(4);
+  });
 
   it("should not get old data when getJSON and setJSON are called simultaneously on different clients and getJSON doesn't fail", async () => {
     // Create two new clients with a fresh revision cache.
@@ -432,5 +495,156 @@ describe("getJSON/setJSON data race regression unit tests", () => {
     // assert our request history contains the expected amount of requests.
     expect(mock.history.get.length).toBe(2);
     expect(mock.history.post.length).toBe(4);
+  });
+
+  it("should not mess up cache when two setJSON calls are made simultaneously and one fails", async () => {
+    // Create a new client with a fresh revision cache.
+    const client = new SkynetClient(portalUrl);
+
+    // Mock a successful setJSON.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkOld, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+
+    // Use Promise.allSettled to wait for all promises to finish, or some mocked
+    // requests will hang around and interfere with the later tests.
+    const values = await Promise.allSettled([
+      client.dbV2.setJSON(privateKey, dataKey, jsonOld),
+      client.dbV2.setJSON(privateKey, dataKey, jsonOld),
+    ]);
+
+    try {
+      getSettledValues < JSONResponse > values;
+    } catch (e) {
+      if (e.message.includes(concurrentAccessError)) {
+        // The data race condition was avoided and we received the expected
+        // error. Return from test early.
+        return;
+      }
+
+      throw e;
+    }
+
+    const cachedRevisionEntry = await client.dbV2.revisionNumberCache.getRevisionAndMutexForEntry(publicKey, dataKey);
+    expect(cachedRevisionEntry.revision.toString()).toEqual("0");
+
+    // Make a getJSON call.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataOld));
+    mock.onGet(skylinkOldUrl).replyOnce(200, skynetJsonOld, headersOld);
+    const { data: receivedJson1 } = await client.dbV2.getJSON(publicKey, dataKey);
+
+    expect(receivedJson1).toEqual(jsonOld);
+
+    // Make another setJSON call - it should still work.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkNew, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+    await client.dbV2.setJSON(privateKey, dataKey, jsonNew);
+
+    expect(cachedRevisionEntry.revision.toString()).toEqual("1");
+
+    // Make a getJSON call.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataNew));
+    mock.onGet(skylinkNewUrl).replyOnce(200, skynetJsonNew, headersNew);
+    const { data: receivedJson2 } = await client.dbV2.getJSON(publicKey, dataKey);
+
+    expect(receivedJson2).toEqual(jsonNew);
+
+    expect(mock.history.get.length).toBe(4);
+    expect(mock.history.post.length).toBe(4);
+  });
+
+  it("should not mess up cache when two setJSON calls are made simultaneously on different clients and one fails", async () => {
+    // Create two new clients with a fresh revision cache.
+    const client1 = new SkynetClient(portalUrl);
+    const client2 = new SkynetClient(portalUrl);
+
+    // Run two simultaneous setJSONs on two different clients - one should work,
+    // one should fail due to bad revision number.
+
+    // Mock a successful setJSON.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkOld, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+    // Mock a failed setJSON (bad revision number).
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkOld, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(400);
+
+    // Use Promise.allSettled to wait for all promises to finish, or some mocked
+    // requests will hang around and interfere with the later tests.
+    const values = await Promise.allSettled([
+      client1.dbV2.setJSON(privateKey, dataKey, jsonOld),
+      client2.dbV2.setJSON(privateKey, dataKey, jsonOld),
+    ]);
+
+    let successClient;
+    let failClient;
+    if (values[0].status === "rejected") {
+      successClient = client2;
+      failClient = client1;
+    } else {
+      successClient = client1;
+      failClient = client2;
+    }
+
+    // Test that the client that succeeded has a consistent cache.
+
+    const cachedRevisionEntrySuccess = await successClient.dbV2.revisionNumberCache.getRevisionAndMutexForEntry(
+      publicKey,
+      dataKey
+    );
+    expect(cachedRevisionEntrySuccess.revision.toString()).toEqual("0");
+
+    // Make a getJSON call.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataOld));
+    mock.onGet(skylinkOldUrl).replyOnce(200, skynetJsonOld, headersOld);
+    const { data: receivedJson1 } = await successClient.dbV2.getJSON(publicKey, dataKey);
+
+    expect(receivedJson1).toEqual(jsonOld);
+
+    // Make another setJSON call - it should still work.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkNew, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+    await successClient.dbV2.setJSON(privateKey, dataKey, jsonNew);
+
+    expect(cachedRevisionEntrySuccess.revision.toString()).toEqual("1");
+
+    // Make a getJSON call.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataNew));
+    mock.onGet(skylinkNewUrl).replyOnce(200, skynetJsonNew, headersNew);
+    const { data: receivedJson2 } = await successClient.dbV2.getJSON(publicKey, dataKey);
+
+    expect(receivedJson2).toEqual(jsonNew);
+
+    // Test that the client that failed has a consistent cache.
+
+    const cachedRevisionEntryFail = await failClient.dbV2.revisionNumberCache.getRevisionAndMutexForEntry(
+      publicKey,
+      dataKey
+    );
+    expect(cachedRevisionEntryFail.revision.toString()).toEqual("-1");
+
+    // Make a getJSON call.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataOld));
+    mock.onGet(skylinkOldUrl).replyOnce(200, skynetJsonOld, headersOld);
+    const { data: receivedJsonFail1 } = await failClient.dbV2.getJSON(publicKey, dataKey);
+
+    expect(receivedJsonFail1).toEqual(jsonOld);
+
+    // Make another setJSON call - it should still work.
+    mock.onPost(uploadUrl).replyOnce(200, { skylink: skylinkNew, merkleroot, bitfield });
+    mock.onPost(registryPostUrl).replyOnce(204);
+    await failClient.dbV2.setJSON(privateKey, dataKey, jsonNew);
+
+    expect(cachedRevisionEntrySuccess.revision.toString()).toEqual("1");
+
+    // Make a getJSON call.
+    mock.onGet(registryGetUrl).replyOnce(200, JSON.stringify(entryDataNew));
+    mock.onGet(skylinkNewUrl).replyOnce(200, skynetJsonNew, headersNew);
+    const { data: receivedJsonFail2 } = await failClient.dbV2.getJSON(publicKey, dataKey);
+
+    expect(receivedJsonFail2).toEqual(jsonNew);
+
+    // Check final request counts.
+
+    expect(mock.history.get.length).toBe(8);
+    expect(mock.history.post.length).toBe(8);
   });
 });

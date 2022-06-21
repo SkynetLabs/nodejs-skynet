@@ -48,10 +48,6 @@ const entryData = {
     "33d14d2889cb292142614da0e0ff13a205c4867961276001471d13b779fc9032568ddd292d9e0dff69d7b1f28be07972cc9d86da3cecf3adecb6f9b7311af809",
 };
 
-const newTimeout = 60000;
-jest.setTimeout(newTimeout);
-jest.useRealTimers();
-
 describe("getJSON", () => {
   let mock = MockAdapter;
 

@@ -1,10 +1,11 @@
 const axios = require("axios");
 const tmp = require("tmp");
-jest.mock("axios");
 
 const { SkynetClient, defaultPortalUrl } = require("../index");
 const { trimForwardSlash } = require("./utils_string");
 const { extractNonSkylinkPath } = require("./utils_testing");
+
+jest.mock("axios");
 
 const attachment = "?attachment=true";
 const portalUrl = defaultPortalUrl();
@@ -12,20 +13,14 @@ const hnsLink = "sky-os";
 const skylink = "XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg";
 const skylinkBase32 = "bg06v2tidkir84hg0s1s4t97jaeoaa1jse1svrad657u070c9calq4g";
 const client = new SkynetClient();
-const expectedUrl = `${portalUrl}/${skylink}`;
 const expectedHnsUrl = `https://${hnsLink}.hns.siasky.net/`;
 const expectedHnsUrlNoSubdomain = `${portalUrl}/hns/${hnsLink}`;
 const expectedHnsresUrl = `${portalUrl}/hnsres/${hnsLink}`;
 const sialink = `sia://${skylink}`;
 const entryLink = "AQDwh1jnoZas9LaLHC_D4-2yP9XYDdZzNtz62H4Dww1jDA";
 
-const validHnsLinkUrl = [`https://${hnsLink}.hns.siasky.net/`, `https://sky-os.hns.siasky.net/`];
 const validSkylinkVariations = [`sia://${skylink}`, `https://siasky.net/${skylink}`, skylink];
 const validHnsLinkVariations = [hnsLink, `hns:${hnsLink}`, `hns://${hnsLink}`];
-
-const newTimeout = 60000;
-jest.setTimeout(newTimeout);
-jest.useRealTimers();
 
 describe("downloadFile", () => {
   const body = "asdf";
@@ -586,37 +581,6 @@ describe("getFileContentBinaryHns", () => {
     const { data } = await client.getFileContentBinaryHns(hnsLink);
 
     expect(data).toEqual(new Uint8Array(binaryData));
-  });
-});
-
-describe("openFile", () => {
-  const windowOpen = jest.spyOn(global.window, "open").mockImplementation();
-  it.each(validSkylinkVariations)(
-    "should call window.openFile when calling openFile with skylink %s",
-    async (fullSkylink) => {
-      windowOpen.mockReset();
-
-      const path = extractNonSkylinkPath(fullSkylink, skylink);
-      await client.openFile(fullSkylink);
-
-      const expectedPathUrl = `${expectedUrl}${path}`;
-      expect(windowOpen).toHaveBeenCalledTimes(1);
-      expect(windowOpen).toHaveBeenCalledWith(expectedPathUrl, "_blank");
-    }
-  );
-});
-
-describe("openFileHns", () => {
-  it("should set domain with the portal and hns link and then call window.openFile", async () => {
-    const windowOpen = jest.spyOn(global.window, "open").mockImplementation();
-
-    for (const input of validHnsLinkVariations) {
-      windowOpen.mockReset();
-      await client.openFileHns(input);
-
-      expect(windowOpen).toHaveBeenCalledTimes(1);
-      expect(windowOpen).toHaveBeenCalledWith(validHnsLinkUrl[1], "_blank");
-    }
   });
 });
 

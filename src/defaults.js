@@ -2,15 +2,6 @@
 
 const { defaultOptions } = require("./utils");
 
-const open = require("open");
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
-global.document = new JSDOM(`...`).window.document;
-global.window = global.document.defaultView;
-global.window.open = function (url) {
-  open(url);
-};
-
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };

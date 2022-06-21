@@ -8,17 +8,17 @@ const { sign } = require("tweetnacl");
 
 const { URI_SKYNET_PREFIX, DEFAULT_SKYNET_PORTAL_URL } = require("skynet-js");
 const { trimPrefix } = require("./utils_string");
-const { validateString } = require("./validation");
+const { validateString } = require("./utils_validation");
 
 /**
  * The default URL of the Skynet portal to use in the absence of configuration.
  */
-const defaultSkynetPortalUrl = `${DEFAULT_SKYNET_PORTAL_URL}`;
+const defaultSkynetPortalUrl = DEFAULT_SKYNET_PORTAL_URL;
 
 /**
  * The URI prefix for Skynet.
  */
-const uriSkynetPrefix = `${URI_SKYNET_PREFIX}`;
+const uriSkynetPrefix = URI_SKYNET_PREFIX;
 
 function defaultOptions(endpointPath) {
   return {
@@ -49,7 +49,6 @@ function defaultPortalUrl() {
 function extractOptions(opts, model) {
   const result = {};
   for (const property in model) {
-    /* istanbul ignore next */
     if (!Object.prototype.hasOwnProperty.call(model, property)) {
       continue;
     }

@@ -2,10 +2,6 @@ const { SkynetClient, defaultPortalUrl } = require("../index");
 const portalUrl = defaultPortalUrl();
 const client = new SkynetClient(portalUrl);
 
-const newTimeout = 60000;
-jest.setTimeout(newTimeout);
-jest.useRealTimers();
-
 describe(`Encrypted File API integration tests for portal '${portalUrl}'`, () => {
   const userID = "4dfb9ce035e4e44711c1bb0a0901ce3adc2a928b122ee7b45df6ac47548646b0";
   // Path seed for "test.hns/encrypted".

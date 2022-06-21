@@ -14,7 +14,7 @@ const {
 
 const { URI_SKYNET_PREFIX } = require("skynet-js");
 const { trimUriPrefix } = require("./utils_string");
-const { validateStringLen } = require("./validation");
+const { validateStringLen } = require("./utils_validation");
 
 /**
  * Decodes the skylink encoded using base32 encoding to bytes.
@@ -94,7 +94,6 @@ const decodeSkylink = function (encoded) {
   }
 
   // Sanity check the size of the given data.
-  /* istanbul ignore next */
   if (bytes.length != RAW_SKYLINK_SIZE) {
     throw new Error("failed to load skylink data");
   }

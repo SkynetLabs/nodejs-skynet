@@ -10,10 +10,6 @@ const skylink = "XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg";
 const sialink = `${URI_SKYNET_PREFIX}${skylink}`;
 const expectedUrl = `${portalUrl}/skynet/pin/${skylink}`;
 
-const newTimeout = 60000;
-jest.setTimeout(newTimeout);
-jest.useRealTimers();
-
 describe("pinSkylink", () => {
   let mock = MockAdapter;
 

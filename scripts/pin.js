@@ -15,7 +15,7 @@
   const defaultSkylink = "sia://XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg";
   let usedSkylink;
 
-  if ((process.argv[2] === null) | (process.argv[2] === undefined)) {
+  if (process.argv[2] === null || process.argv[2] === undefined) {
     usedSkylink = defaultSkylink;
     console.log("\n\nusedSkylink =  " + usedSkylink);
   } else {
