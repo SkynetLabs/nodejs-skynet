@@ -16,13 +16,6 @@
   const defaultMyskyJsonPath = "test.hns/encrypted";
   // end default variables
 
-  const fs = require("fs");
-  var dir = "./tmp/download/";
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
   const { SkynetClient, defaultSkynetPortalUrl } = require("..");
   const portalUrl = defaultSkynetPortalUrl;
   const client = new SkynetClient(`${portalUrl}`);
