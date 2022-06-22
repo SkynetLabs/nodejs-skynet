@@ -120,8 +120,14 @@ describe("downloadData", () => {
 });
 
 describe("downloadFileHns", () => {
-  const tmpFile = tmp.fileSync();
+  const body = "asdf";
+
+  beforeEach(() => {
+    axios.mockResolvedValue({ data: { body, pipe: function () {} } });
+  });
+
   it.each(validHnsLinkVariations)("should download with the correct link using hns link %s", async (input) => {
+    const tmpFile = tmp.fileSync();
     const url = await client.downloadFileHns(tmpFile.name, input, { download: true, subdomain: true });
 
     expect(url).toEqual(`${expectedHnsUrl}`);

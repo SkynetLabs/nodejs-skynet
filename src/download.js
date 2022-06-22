@@ -5,7 +5,7 @@
 const fs = require("fs");
 
 const { SkynetClient } = require("./client");
-const { DEFAULT_DOWNLOAD_OPTIONS } = require("./defaults");
+const { DEFAULT_DOWNLOAD_OPTIONS, DEFAULT_DOWNLOAD_HNS_OPTIONS } = require("./defaults");
 const { trimSiaPrefix } = require("./utils_string");
 
 /**
@@ -52,4 +52,31 @@ SkynetClient.prototype.downloadFile = function (path, skylink, customOptions = {
         reject(error);
       });
   });
+};
+
+SkynetClient.prototype.downloadFileHns = async function (path, domain, customOptions = {}) {
+  const opts = { ...DEFAULT_DOWNLOAD_HNS_OPTIONS, ...this.customOptions, ...customOptions };
+
+  const url = await this.getHnsUrl(domain);
+
+  const writer = fs.createWriteStream(path);
+
+  new Promise((resolve, reject) => {
+    this.executeRequest({
+      ...opts,
+      method: "get",
+      url: url,
+      responseType: "stream",
+    })
+      .then((response) => {
+        response.data.pipe(writer);
+        writer.on("finish", resolve);
+        writer.on("error", reject);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+
+  return url;
 };

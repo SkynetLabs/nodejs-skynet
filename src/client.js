@@ -5,7 +5,6 @@ const { defaultPortalUrl, makeUrl } = require("./utils.js");
 
 const { setJSONdbV1 } = require("./skydb.js");
 const { setJSONdbV2 } = require("./skydb_v2.js");
-const { downloadFileHns } = require("./downloadHns.js");
 
 class SkynetClient {
   /**
@@ -46,7 +45,6 @@ class SkynetClient {
     this.browserClient = browserClient;
 
     // Download
-    this.downloadFileHns = downloadFileHns.bind(browserClient);
     this.getSkylinkUrl = browserClient.getSkylinkUrl.bind(browserClient);
     this.getHnsUrl = browserClient.getHnsUrl.bind(browserClient);
     this.getHnsresUrl = browserClient.getHnsresUrl.bind(browserClient);
