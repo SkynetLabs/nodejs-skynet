@@ -10,6 +10,10 @@ const { URI_SKYNET_PREFIX, DEFAULT_SKYNET_PORTAL_URL } = require("skynet-js");
 const { trimPrefix } = require("./utils_string");
 const { validateString } = require("./utils_validation");
 
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
 /**
  * The default URL of the Skynet portal to use in the absence of configuration.
  */

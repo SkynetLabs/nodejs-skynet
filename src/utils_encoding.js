@@ -4,17 +4,17 @@ const { fromByteArray, toByteArray } = require("base64-js");
 const base32Decode = require("base32-decode");
 const base32Encode = require("base32-encode");
 
+const { URI_SKYNET_PREFIX } = require("skynet-js");
 const {
   RAW_SKYLINK_SIZE,
-  BASE32_ENCODING_VARIANT,
   BASE32_ENCODED_SKYLINK_SIZE,
   BASE64_ENCODED_SKYLINK_SIZE,
   ERR_SKYLINK_INCORRECT_SIZE,
-} = require("./defaults");
-
-const { URI_SKYNET_PREFIX } = require("skynet-js");
+} = require("./skylink_sia");
 const { trimUriPrefix } = require("./utils_string");
 const { validateStringLen } = require("./utils_validation");
+
+const BASE32_ENCODING_VARIANT = "RFC4648-HEX";
 
 /**
  * Decodes the skylink encoded using base32 encoding to bytes.

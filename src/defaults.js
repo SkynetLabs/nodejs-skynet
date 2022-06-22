@@ -2,10 +2,6 @@
 
 const { defaultOptions } = require("./utils");
 
-BigInt.prototype.toJSON = function () {
-  return this.toString();
-};
-
 /**
  * The tus chunk size is (4MiB - encryptionOverhead) * dataPieces, set in skyd.
  */
@@ -90,34 +86,6 @@ const DEFAULT_SET_JSON_OPTIONS = {
   endpointPath: "/skynet/skyfile",
 };
 
-/**
- * The raw size in bytes of the data that gets put into a link.
- */
-const RAW_SKYLINK_SIZE = 34;
-
-const BASE32_ENCODING_VARIANT = "RFC4648-HEX";
-
-/**
- * The string length of the Skylink after it has been encoded using base32.
- */
-const BASE32_ENCODED_SKYLINK_SIZE = 55;
-
-/**
- * The string length of the Skylink after it has been encoded using base64.
- */
-const BASE64_ENCODED_SKYLINK_SIZE = 46;
-
-/**
- * Returned when a string could not be decoded into a Skylink due to it having
- * an incorrect size.
- */
-const ERR_SKYLINK_INCORRECT_SIZE = "skylink has incorrect size";
-
-/**
- * Regex for JSON revision value without quotes.
- */
-const REGEX_REVISION_NO_QUOTES = /"revision":\s*([0-9]+)/;
-
 module.exports = {
   TUS_CHUNK_SIZE,
   DEFAULT_BASE_OPTIONS,
@@ -129,10 +97,4 @@ module.exports = {
   DEFAULT_SET_ENTRY_OPTIONS,
   DEFAULT_GET_JSON_OPTIONS,
   DEFAULT_SET_JSON_OPTIONS,
-  RAW_SKYLINK_SIZE,
-  BASE32_ENCODING_VARIANT,
-  BASE32_ENCODED_SKYLINK_SIZE,
-  BASE64_ENCODED_SKYLINK_SIZE,
-  ERR_SKYLINK_INCORRECT_SIZE,
-  REGEX_REVISION_NO_QUOTES,
 };

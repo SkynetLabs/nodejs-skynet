@@ -8,9 +8,9 @@ const {
   DEFAULT_GET_JSON_OPTIONS,
   DEFAULT_SET_JSON_OPTIONS,
   DEFAULT_UPLOAD_OPTIONS,
-  RAW_SKYLINK_SIZE,
 } = require("./defaults");
 
+const { RAW_SKYLINK_SIZE } = require("./skylink_sia");
 const { extractOptions, getPublicKeyFromPrivateKey, formatSkylink } = require("./utils");
 const { trimPrefix } = require("./utils_string");
 const { decodeSkylinkBase64 } = require("./utils_encoding");
