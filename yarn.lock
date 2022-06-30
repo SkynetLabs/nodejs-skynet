@@ -1004,9 +1004,9 @@ asynckit@^0.4.0:
   integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
 
 axios-retry@^3.2.5:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.3.0.tgz#959603ef12e94fb8ed816314232c7da94389698d"
-  integrity sha512-lKAk/qIkpYxscEooNPB6Yip3aPNcNJ+cAiU1eiTo9vCh+gYPX482K4lfYubPXwbVvmNM4cakAsfN171nmSHkdg==
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.3.1.tgz#47624646138aedefbad2ac32f226f4ee94b6dcab"
+  integrity sha512-RohAUQTDxBSWLFEnoIG/6bvmy8l3TfpkclgStjl5MDCMBDgapAWCmr1r/9harQfWC8bzLC8job6UcL1A1Yc+/Q==
   dependencies:
     "@babel/runtime" "^7.15.4"
     is-retry-allowed "^2.2.0"
