@@ -1,20 +1,20 @@
 "use strict";
 
+const { URI_SKYNET_PREFIX, MAX_REVISION } = require("skynet-js");
+
 const {
-  MAX_REVISION,
   DEFAULT_GET_ENTRY_OPTIONS,
   DEFAULT_SET_ENTRY_OPTIONS,
   DEFAULT_GET_JSON_OPTIONS,
   DEFAULT_SET_JSON_OPTIONS,
   DEFAULT_UPLOAD_OPTIONS,
-  buildSkynetJsonObject,
-  getPublicKeyFromPrivateKey,
-  RAW_SKYLINK_SIZE,
-  decodeSkylinkBase64,
-  formatSkylink,
-  URI_SKYNET_PREFIX,
 } = require("./defaults");
-const { extractOptions, trimPrefix } = require("./utils");
+
+const { RAW_SKYLINK_SIZE } = require("./skylink_sia");
+const { extractOptions, getPublicKeyFromPrivateKey, formatSkylink } = require("./utils");
+const { trimPrefix } = require("./utils_string");
+const { decodeSkylinkBase64 } = require("./utils_encoding");
+const { buildSkynetJsonObject } = require("./skydb_v2");
 
 /**
  * Sets a JSON object at the registry entry corresponding to the privateKey and dataKey using SkyDB V1.

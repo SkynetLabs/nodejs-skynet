@@ -1,4 +1,5 @@
-const { defaultPortalUrl, makeUrl, trimSiaPrefix, uriSkynetPrefix } = require("./utils.js");
+const { defaultPortalUrl, makeUrl, uriSkynetPrefix } = require("./utils.js");
+const { trimSiaPrefix } = require("./utils_string");
 
 const portalUrl = defaultPortalUrl();
 const skylink = "XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg";

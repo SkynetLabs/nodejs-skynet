@@ -11,8 +11,9 @@ const fs = require("fs");
 const process = require("process");
 
 (async () => {
-  const { SkynetClient, genKeyPairFromSeed, formatSkylink } = require("..");
-  const client = new SkynetClient("https://siasky.net");
+  const { SkynetClient, defaultSkynetPortalUrl, genKeyPairFromSeed, formatSkylink } = require("..");
+  const portalUrl = defaultSkynetPortalUrl;
+  const client = new SkynetClient(`${portalUrl}`);
 
   const dataKey = process.argv[2];
   console.log("\n\ndataKey =  " + dataKey);
@@ -51,7 +52,7 @@ const process = require("process");
       console.log(`Saved Data: ${JSON.stringify(res.data)}`);
     })
     .catch((err) => {
-      console.log("Error: ", err);
+      console.log("\n1. Error: ", err);
     });
 
   // 2. use db.getJSON to get the data.
@@ -64,7 +65,7 @@ const process = require("process");
       console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n2. Get Error: ", JSON.stringify(err));
     });
 
   // 3. use db.deleteJSON to delete the dataKey from skydb.
@@ -74,7 +75,7 @@ const process = require("process");
       console.log("\n3. use db.deleteJSON to delete the dataKey from skydb.");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n3. Get Error: ", JSON.stringify(err));
     });
 
   // 4. use db.getJSON to check dataKey and data after deleteJSON.
@@ -87,7 +88,7 @@ const process = require("process");
       console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n4. Get Error: ", JSON.stringify(err));
     });
 
   // 5. use db.setDataLink to set a new dataLink.
@@ -97,7 +98,7 @@ const process = require("process");
       console.log("\n5. use db.setDataLink to set a new dataLink.");
     })
     .catch((err) => {
-      console.log("Error: ", err);
+      console.log("\n5. Error: ", err);
     });
 
   // 6. use db.getJSON to check dataKey and data after setDataLink.
@@ -110,7 +111,7 @@ const process = require("process");
       console.log("Retrieved Data: " + JSON.stringify(data["data"]) + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n6. Get Error: ", JSON.stringify(err));
     });
 
   // 7. use db.setEntryData to set the EntryData.
@@ -120,7 +121,7 @@ const process = require("process");
       console.log("\n7. use db.setEntryData to set the EntryData.");
     })
     .catch((err) => {
-      console.log("Get Error: ", err);
+      console.log("\n7. Get Error: ", err);
     });
 
   // 8. use db.getEntryData .
@@ -132,7 +133,7 @@ const process = require("process");
       console.log("Retrieved EntryData: " + data["data"] + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n8. Get Error: ", JSON.stringify(err));
     });
 
   // 9. use db.getRawBytes to get dataLink and data.
@@ -145,7 +146,7 @@ const process = require("process");
       console.log("Retrieved data: " + data["data"] + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n9. Get Error: ", JSON.stringify(err));
     });
 
   // 10. use db.deleteEntryData to delete the EntryData from skydb.
@@ -155,7 +156,7 @@ const process = require("process");
       console.log("\n10. use db.deleteEntryData to delete the EntryData from skydb.");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n10. Get Error: ", JSON.stringify(err));
     });
 
   // 11. use db.getEntryData to check data after db.deleteEntryData.
@@ -167,7 +168,7 @@ const process = require("process");
       console.log("Retrieved EntryData: " + JSON.stringify(data) + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n11. Get Error: ", JSON.stringify(err));
     });
 
   // 12. use db.getRawBytes to check dataKey and data after db.deleteEntryData.
@@ -180,6 +181,6 @@ const process = require("process");
       console.log("Retrieved data: " + data["data"] + "\n");
     })
     .catch((err) => {
-      console.log("Get Error: ", JSON.stringify(err));
+      console.log("\n12. Get Error: ", JSON.stringify(err));
     });
 })();

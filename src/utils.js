@@ -2,19 +2,27 @@
 
 const path = require("path");
 const fs = require("fs");
-
 const mime = require("mime/lite");
 const urljoin = require("url-join");
+const { sign } = require("tweetnacl");
+
+const { URI_SKYNET_PREFIX, DEFAULT_SKYNET_PORTAL_URL } = require("skynet-js");
+const { trimPrefix } = require("./utils_string");
+const { validateString } = require("./utils_validation");
+
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
 
 /**
  * The default URL of the Skynet portal to use in the absence of configuration.
  */
-const defaultSkynetPortalUrl = "https://siasky.net";
+const defaultSkynetPortalUrl = DEFAULT_SKYNET_PORTAL_URL;
 
 /**
  * The URI prefix for Skynet.
  */
-const uriSkynetPrefix = "sia://";
+const uriSkynetPrefix = URI_SKYNET_PREFIX;
 
 function defaultOptions(endpointPath) {
   return {
@@ -45,7 +53,6 @@ function defaultPortalUrl() {
 function extractOptions(opts, model) {
   const result = {};
   for (const property in model) {
-    /* istanbul ignore next */
     if (!Object.prototype.hasOwnProperty.call(model, property)) {
       continue;
     }
@@ -88,31 +95,6 @@ function makeUrl() {
   });
 }
 
-/**
- * Removes a prefix from the beginning of the string.
- *
- * @param str - The string to process.
- * @param prefix - The prefix to remove.
- * @param [limit] - Maximum amount of times to trim. No limit by default.
- * @returns - The processed string.
- */
-function trimPrefix(str, prefix, limit) {
-  if (typeof limit !== "number" && typeof limit !== "undefined") {
-    throw new Error(`Invalid input: 'limit' must be type 'number | undefined', was '${typeof limit}'`);
-  }
-
-  while (str.startsWith(prefix)) {
-    if (limit !== undefined && limit <= 0) {
-      break;
-    }
-    str = str.slice(prefix.length);
-    if (limit) {
-      limit -= 1;
-    }
-  }
-  return str;
-}
-
 function walkDirectory(filepath, out) {
   let files = [];
   if (!fs.existsSync(filepath)) {
@@ -130,19 +112,46 @@ function walkDirectory(filepath, out) {
   return files;
 }
 
-function trimSiaPrefix(str) {
-  return trimPrefix(str, uriSkynetPrefix);
-}
+/**
+ * Get the publicKey from privateKey.
+ *
+ * @param privateKey - The privateKey.
+ * @returns - The publicKey.
+ */
+const getPublicKeyFromPrivateKey = function (privateKey) {
+  const publicKey = Buffer.from(
+    sign.keyPair.fromSecretKey(Uint8Array.from(Buffer.from(privateKey, "hex"))).publicKey
+  ).toString("hex");
+  return publicKey;
+};
+
+/**
+ * Formats the skylink by adding the sia: prefix.
+ *
+ * @param skylink - The skylink.
+ * @returns - The formatted skylink.
+ */
+const formatSkylink = function (skylink) {
+  validateString("skylink", skylink, "parameter");
+
+  if (skylink === "") {
+    return skylink;
+  }
+  if (!skylink.startsWith(URI_SKYNET_PREFIX)) {
+    skylink = `${URI_SKYNET_PREFIX}${skylink}`;
+  }
+  return skylink;
+};
 
 module.exports = {
+  defaultSkynetPortalUrl,
+  uriSkynetPrefix,
   defaultOptions,
   defaultPortalUrl,
-  defaultSkynetPortalUrl,
   extractOptions,
   getFileMimeType,
   makeUrl,
-  trimSiaPrefix,
-  trimPrefix,
-  uriSkynetPrefix,
   walkDirectory,
+  getPublicKeyFromPrivateKey,
+  formatSkylink,
 };

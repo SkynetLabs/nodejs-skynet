@@ -1,8 +1,14 @@
 "use strict";
 
 const { SkynetClient } = require("./src/client");
-const { defaultOptions, defaultSkynetPortalUrl, defaultPortalUrl, uriSkynetPrefix } = require("./src/utils");
-const { formatSkylink } = require("./src/defaults");
+
+const {
+  defaultOptions,
+  defaultSkynetPortalUrl,
+  defaultPortalUrl,
+  uriSkynetPrefix,
+  formatSkylink,
+} = require("./src/utils");
 
 const { genKeyPairAndSeed, genKeyPairFromSeed, getEntryLink } = require("skynet-js");
 
