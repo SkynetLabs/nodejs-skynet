@@ -14,12 +14,27 @@ Types of changes:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
+## Unreleased
+
+### Added
+
+- `stringToUint8ArrayUtf8` and `uint8ArrayToStringUtf8` conversion utilities
+  (for working with registry entries).
+- Export more methods from `skynet-js`:
+  - `downloadFileHns`
+  - `getHnsUrl`, `getHnsresUrl`
+  - `getFileContent`, `getFileContentBinary`, `getFileContentHns`, `getFileContentBinaryHns`
+  - `resolveHns`,
+  - `pinSkylink`
+  - `file.getJSON`
+
 ## [2.6.0]
 
 ### Added
 
 - Add `uploadData` and `downloadData`.
-- Add SkyDB and SkyDB V2 (accessed with `client.db` and `client.dbV2`). By @parajbs in https://github.com/SkynetLabs/nodejs-skynet/pull/140
+- Add SkyDB and SkyDB V2 (accessed with `client.db` and `client.dbV2`). By
+  @parajbs in https://github.com/SkynetLabs/nodejs-skynet/pull/140
 
 ## [2.5.1]
 
@@ -60,7 +75,9 @@ Types of changes:
 - Added `client.getSkylinkUrl`.
 - Added `client.file.getEntryData` and `client.file.getEntryLink`.
 - Added `client.db.setDataLink`.
-- Added `client.registry.getEntry`, `client.registry.getEntryUrl`, `client.registry.getEntryLink`, `client.registry.setEntry`, and `client.registry.postSignedEntry`.
+- Added `client.registry.getEntry`, `client.registry.getEntryUrl`,
+  `client.registry.getEntryLink`, `client.registry.setEntry`, and
+  `client.registry.postSignedEntry`.
 - Added `genKeyPairAndSeed`, `genKeyPairFromSeed`, `getEntryLink` function exports.
 
 ## [2.2.0]

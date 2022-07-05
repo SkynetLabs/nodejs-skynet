@@ -10,7 +10,13 @@ const {
   formatSkylink,
 } = require("./src/utils");
 
-const { genKeyPairAndSeed, genKeyPairFromSeed, getEntryLink } = require("skynet-js");
+const {
+  genKeyPairAndSeed,
+  genKeyPairFromSeed,
+  getEntryLink,
+  stringToUint8ArrayUtf8,
+  uint8ArrayToStringUtf8,
+} = require("skynet-js");
 
 module.exports = {
   SkynetClient,
@@ -26,4 +32,6 @@ module.exports = {
   genKeyPairAndSeed,
   genKeyPairFromSeed,
   getEntryLink,
+  stringToUint8ArrayUtf8,
+  uint8ArrayToStringUtf8,
 };
