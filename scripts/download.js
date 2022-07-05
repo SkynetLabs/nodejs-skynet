@@ -1,10 +1,9 @@
 /**
- * Demo script for test all funktions from "download area".
+ * Demo script to test all download functions.
  *
- * Example for all funktions from "download area" usage: node scripts/download.js "sia://XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg" "sky-os"
+ * Example usage: node scripts/download.js "sia://XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg" "sky-os"
  *
  * Example with default data: node scripts/download.js
- *
  */
 
 const fs = require("fs");

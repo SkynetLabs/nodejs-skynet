@@ -1,7 +1,7 @@
 /**
  * Demo script that uploads data passed in as CLI arguments.
  *
- * Example usage: node scripts/upload-data.js <filename> <data-string>
+ * Example usage: node scripts/upload_data.js <filename> <data-string>
  */
 
 const process = require("process");

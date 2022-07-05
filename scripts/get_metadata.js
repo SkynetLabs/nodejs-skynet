@@ -1,7 +1,7 @@
 /**
  * Demo script that gets metadata for all skylinks passed in as CLI arguments.
  *
- * Example usage: node scripts/get-metadata.js <skylink>
+ * Example usage: node scripts/get_metadata.js <skylink>
  */
 
 const process = require("process");
