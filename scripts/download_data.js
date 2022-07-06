@@ -1,7 +1,7 @@
 /**
  * Demo script that downloads data for all skylinks passed in as CLI arguments.
  *
- * Example usage: node scripts/download-data.js <skylink>
+ * Example usage: node scripts/download_data.js <skylink>
  */
 
 const process = require("process");
