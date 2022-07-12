@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { SkynetClient: BrowserSkynetClient } = require("skynet-js");
 
-const { defaultPortalUrl, makeUrl } = require("./utils.js");
+const { defaultPortalUrl, makeUrl, onDownloadProgress } = require("./utils.js");
 
 const { setJSONdbV1 } = require("./skydb.js");
 const { setJSONdbV2 } = require("./skydb_v2.js");
@@ -133,6 +133,7 @@ class SkynetClient {
       headers,
       auth: config.APIKey && { username: "", password: config.APIKey },
       responseType: config.responseType,
+      onDownloadProgress: onDownloadProgress,
       onUploadProgress:
         config.onUploadProgress &&
         function ({ loaded, total }) {
