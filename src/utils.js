@@ -2,6 +2,7 @@
 
 const path = require("path");
 const fs = require("fs");
+const progress = require("progress");
 const mime = require("mime/lite");
 const urljoin = require("url-join");
 const { sign } = require("tweetnacl");
@@ -143,6 +144,29 @@ const formatSkylink = function (skylink) {
   return skylink;
 };
 
+// Set an download progress tracker.
+const onDownloadProgress = function (response, opts) {
+  if (opts.onDownloadProgress) {
+    let totalLength = 0;
+    totalLength = parseInt(response.headers["content-length"]);
+    console.log(" The downloaded File size is " + totalLength + " bytes.");
+    const progressBar = new progress("-> downloading [:bar] :percent :etas", {
+      width: 40,
+      complete: "=",
+      incomplete: " ",
+      renderThrottle: 1,
+      total: parseInt(totalLength),
+    });
+    response.data.on("data", (chunk) => progressBar.tick(chunk.length));
+  }
+};
+
+// Set an upload progress tracker.
+const onUploadProgress = (progress, { loaded, total }) => {
+  let percentComplete = loaded / total;
+  console.info(`Progress ${Math.round(percentComplete * 100)}%`);
+};
+
 module.exports = {
   defaultSkynetPortalUrl,
   uriSkynetPrefix,
@@ -154,4 +178,6 @@ module.exports = {
   walkDirectory,
   getPublicKeyFromPrivateKey,
   formatSkylink,
+  onDownloadProgress,
+  onUploadProgress,
 };

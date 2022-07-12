@@ -5,6 +5,7 @@
 const fs = require("fs");
 
 const { SkynetClient } = require("./client");
+const { onDownloadProgress } = require("./utils");
 const { DEFAULT_DOWNLOAD_OPTIONS, DEFAULT_DOWNLOAD_HNS_OPTIONS } = require("./defaults");
 const { trimSiaPrefix } = require("./utils_string");
 
@@ -44,6 +45,7 @@ SkynetClient.prototype.downloadFile = function (path, skylink, customOptions = {
       responseType: "stream",
     })
       .then((response) => {
+        onDownloadProgress(response, opts);
         response.data.pipe(writer);
         writer.on("finish", resolve);
         writer.on("error", reject);
@@ -69,6 +71,7 @@ SkynetClient.prototype.downloadFileHns = async function (path, domain, customOpt
       responseType: "stream",
     })
       .then((response) => {
+        onDownloadProgress(response, opts);
         response.data.pipe(writer);
         writer.on("finish", resolve);
         writer.on("error", reject);

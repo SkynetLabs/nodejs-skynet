@@ -8,6 +8,8 @@ const {
   defaultPortalUrl,
   uriSkynetPrefix,
   formatSkylink,
+  onDownloadProgress,
+  onUploadProgress,
 } = require("./src/utils");
 
 const {
@@ -26,6 +28,8 @@ module.exports = {
   defaultSkynetPortalUrl,
   uriSkynetPrefix,
   formatSkylink,
+  onDownloadProgress,
+  onUploadProgress,
 
   // Re-export utilities from skynet-js.
 
