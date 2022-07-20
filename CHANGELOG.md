@@ -16,6 +16,8 @@ Types of changes:
 
 ## Unreleased
 
+## [2.7.0]
+
 ### Added
 
 - `stringToUint8ArrayUtf8` and `uint8ArrayToStringUtf8` conversion utilities
