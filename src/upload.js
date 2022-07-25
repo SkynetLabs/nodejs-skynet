@@ -110,6 +110,14 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
   });
 }
 
+/**
+ * Uploads a directory from the local filesystem to Skynet.
+ *
+ * @param {string} path - The path of the directory to upload.
+ * @param {Object} [customOptions] - Configuration options.
+ * @param {Object} [customOptions.disableDefaultPath=false] - If the value of `disableDefaultPath` is `true` no content is served if the skyfile is accessed at its root path.
+ * @returns - The skylink.
+ */
 SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {}) {
   const opts = { ...DEFAULT_UPLOAD_OPTIONS, ...this.customOptions, ...customOptions };
 
@@ -149,6 +157,9 @@ SkynetClient.prototype.uploadDirectory = async function (path, customOptions = {
   }
   if (opts.errorPages) {
     params.errorpages = JSON.stringify(opts.errorPages);
+  }
+  if (opts.disableDefaultPath) {
+    params.disableDefaultPath = true;
   }
 
   if (opts.dryRun) params.dryrun = true;
