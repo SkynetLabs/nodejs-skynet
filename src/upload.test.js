@@ -227,6 +227,7 @@ describe("uploadDirectory", () => {
       endpointPath: "/skynet/file",
       portalDirectoryFileFieldname: "filetest",
       customDirname: "/testpath",
+      disableDefaultPath: true,
       dryRun: true,
     });
 
@@ -242,6 +243,7 @@ describe("uploadDirectory", () => {
           headers: expect.anything(),
           params: {
             filename: "testpath",
+            disableDefaultPath: true,
             dryrun: true,
           },
         })

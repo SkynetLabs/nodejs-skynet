@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { PassThrough } = require("stream");
 const tmp = require("tmp");
 
 const { SkynetClient, defaultPortalUrl } = require("../index");
@@ -24,15 +25,27 @@ const validHnsLinkVariations = [hnsLink, `hns:${hnsLink}`, `hns://${hnsLink}`];
 
 describe("downloadFile", () => {
   const body = "asdf";
+  const mockResponse = `{ "data": ${body} }`;
 
   beforeEach(() => {
-    axios.mockResolvedValue({ data: { body, pipe: function () {} } });
+    const mockStream = new PassThrough();
+    mockStream.push(mockResponse);
+    mockStream.end(); // Mark that we pushed all the data.
+
+    axios.mockResolvedValue({
+      data: {
+        body,
+        pipe: function (writer) {
+          mockStream.pipe(writer);
+        },
+      },
+    });
   });
 
-  it("should send get request to default portal", () => {
+  it("should send get request to default portal", async () => {
     const tmpFile = tmp.fileSync();
 
-    client.downloadFile(tmpFile.name, skylink);
+    await client.downloadFile(tmpFile.name, skylink);
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -45,10 +58,10 @@ describe("downloadFile", () => {
     tmpFile.removeCallback();
   });
 
-  it("should use custom options if defined on the API call", () => {
+  it("should use custom options if defined on the API call", async () => {
     const tmpFile = tmp.fileSync();
 
-    client.downloadFile(tmpFile.name, skylink, {
+    await client.downloadFile(tmpFile.name, skylink, {
       portalUrl: "http://localhost",
       customCookie: "skynet-jwt=foo",
     });
@@ -65,7 +78,7 @@ describe("downloadFile", () => {
     tmpFile.removeCallback();
   });
 
-  it("should use custom connection options if defined on the client", () => {
+  it("should use custom connection options if defined on the client", async () => {
     const tmpFile = tmp.fileSync();
     const client = new SkynetClient("", {
       APIKey: "foobar",
@@ -74,7 +87,7 @@ describe("downloadFile", () => {
       customCookie: "skynet-jwt=foo",
     });
 
-    client.downloadFile(tmpFile.name, skylink, {
+    await client.downloadFile(tmpFile.name, skylink, {
       APIKey: "barfoo",
       skynetApiKey: "api-key-2",
       customUserAgent: "Sia-Agent-2",
@@ -121,9 +134,21 @@ describe("downloadData", () => {
 
 describe("downloadFileHns", () => {
   const body = "asdf";
+  const mockResponse = `{ "data": ${body} }`;
 
   beforeEach(() => {
-    axios.mockResolvedValue({ data: { body, pipe: function () {} } });
+    const mockStream = new PassThrough();
+    mockStream.push(mockResponse);
+    mockStream.end(); // Mark that we pushed all the data.
+
+    axios.mockResolvedValue({
+      data: {
+        body,
+        pipe: function (writer) {
+          mockStream.pipe(writer);
+        },
+      },
+    });
   });
 
   it.each(validHnsLinkVariations)("should download with the correct link using hns link %s", async (input) => {
@@ -131,6 +156,22 @@ describe("downloadFileHns", () => {
     const url = await client.downloadFileHns(tmpFile.name, input, { download: true, subdomain: true });
 
     expect(url).toEqual(`${expectedHnsUrl}`);
+    await tmpFile.removeCallback();
+  });
+
+  it("should set format query parameter if passed as an option", async () => {
+    const tmpFile = tmp.fileSync();
+    await client.downloadFileHns(tmpFile.name, hnsLink, { format: "zip" });
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expectedHnsUrl,
+        method: "get",
+        responseType: "stream",
+        params: { format: "zip" },
+      })
+    );
+
     await tmpFile.removeCallback();
   });
 });
