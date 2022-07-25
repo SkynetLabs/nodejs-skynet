@@ -16,6 +16,15 @@ Types of changes:
 
 ## Unreleased
 
+### Fixed
+
+- A bug has been fixed in `downloadFileHns` where it was creating a detached promise.
+
+### Added
+
+- `disableDefaultPath` option for `uploadDirectory`.
+- `format` option for `downloadFile` and `downloadFileHns`.
+
 ## [2.7.0]
 
 ### Added
