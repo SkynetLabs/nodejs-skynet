@@ -25,6 +25,7 @@ const DEFAULT_BASE_OPTIONS = {
 
 const DEFAULT_DOWNLOAD_OPTIONS = {
   ...defaultOptions("/"),
+  format: "",
 };
 
 const DEFAULT_DOWNLOAD_HNS_OPTIONS = {
@@ -45,6 +46,7 @@ const DEFAULT_UPLOAD_OPTIONS = {
   portalDirectoryFileFieldname: "files[]",
   customFilename: "",
   customDirname: "",
+  disableDefaultPath: false,
   dryRun: false,
   errorPages: undefined,
   largeFileSize: TUS_CHUNK_SIZE,
