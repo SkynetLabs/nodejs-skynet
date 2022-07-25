@@ -16,6 +16,8 @@ Types of changes:
 
 ## Unreleased
 
+## [2.8.0]
+
 ### Fixed
 
 - A bug has been fixed in `downloadFileHns` where it was creating a detached promise.
