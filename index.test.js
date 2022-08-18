@@ -10,13 +10,6 @@ describe("SkynetClient", () => {
     expect(client).toHaveProperty("downloadFileHns");
     expect(client).toHaveProperty("getMetadata");
 
-    // Encryption
-    expect(client).toHaveProperty("addSkykey");
-    expect(client).toHaveProperty("createSkykey");
-    expect(client).toHaveProperty("getSkykeyById");
-    expect(client).toHaveProperty("getSkykeyByName");
-    expect(client).toHaveProperty("getSkykeys");
-
     // Upload
     expect(client).toHaveProperty("uploadData");
     expect(client).toHaveProperty("uploadFile");

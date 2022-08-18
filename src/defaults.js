@@ -18,8 +18,6 @@ const DEFAULT_BASE_OPTIONS = {
   skynetApiKey: "",
   customUserAgent: "",
   customCookie: "",
-  onDownloadProgress: undefined,
-  onUploadProgress: undefined,
   loginFn: undefined,
 };
 
