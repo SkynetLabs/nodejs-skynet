@@ -411,26 +411,6 @@ describe("getFileContent", () => {
     expect(request.data.headers["range"]).toEqual(range);
   });
 
-  it("should register onDownloadProgress callback if defined", async () => {
-    const skynetFileContents2 = { arbitrary: "json string", onDownloadProgress: jest.fn() };
-    const headers = {
-      "skynet-portal-api": portalUrl,
-      "skynet-skylink": skylink,
-      "content-type": "application/json",
-    };
-    axios.mockResolvedValue({ status: 200, data: skynetFileContents, headers: headers });
-    // Assert `onDownloadProgress` is not defined if not set.
-    const request1 = await client.getFileContent(skylink);
-
-    expect(request1.onDownloadProgress).not.toBeDefined();
-
-    axios.mockResolvedValue({ status: 200, data: skynetFileContents2, headers: headers });
-    // Assert `onDownloadProgress` is defined when passed as an option.
-    const request2 = await client.getFileContent(skylink, { onDownloadProgress: jest.fn() });
-
-    expect(request2.data.onDownloadProgress).toBeDefined();
-  });
-
   describe("proof validation", () => {
     const headers = {
       "skynet-portal-api": portalUrl,

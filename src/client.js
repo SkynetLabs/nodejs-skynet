@@ -16,7 +16,6 @@ class SkynetClient {
    * @param {string} [customOptions.skynetApiKey] - Authentication API key to use for a Skynet portal (sets the "Skynet-Api-Key" header).
    * @param {string} [customCookie=""] - Custom cookie header to set.
    * @param {string} [customOptions.customUserAgent=""] - Custom user agent header to set.
-   * @param {Function} [customOptions.onUploadProgress] - Optional callback to track progress.
    */
   constructor(portalUrl, customOptions = {}) {
     // Check if portal URL provided twice.
@@ -133,13 +132,6 @@ class SkynetClient {
       headers,
       auth: config.APIKey && { username: "", password: config.APIKey },
       responseType: config.responseType,
-      onUploadProgress:
-        config.onUploadProgress &&
-        function ({ loaded, total }) {
-          const progress = loaded / total;
-
-          config.onUploadProgress(progress, { loaded, total });
-        },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
     });
@@ -176,5 +168,4 @@ module.exports = { SkynetClient, buildRequestHeaders };
 
 // Get the following files to run or the client's methods won't be defined.
 require("./download.js");
-require("./encryption.js");
 require("./upload.js");
