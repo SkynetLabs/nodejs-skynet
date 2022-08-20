@@ -13,7 +13,7 @@ const {
   MAX_ENTRY_LENGTH,
 } = require("skynet-js");
 
-const { REGEX_REVISION_NO_QUOTES } = require("./defaults");
+const { REGEX_REVISION_NO_QUOTES } = require("./utils_registry");
 const { checkCachedDataLink } = require("./skydb_v2");
 
 // Generated with genKeyPairFromSeed("insecure test seed")

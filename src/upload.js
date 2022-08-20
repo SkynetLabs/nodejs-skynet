@@ -4,11 +4,12 @@ const FormData = require("form-data");
 const fs = require("fs");
 const p = require("path");
 
-const { Upload } = require("@skynetlabs/tus-js-client");
+const { DetailedError, Upload } = require("@skynetlabs/tus-js-client");
 
 const { buildRequestHeaders, SkynetClient } = require("./client");
 const { DEFAULT_UPLOAD_OPTIONS, TUS_CHUNK_SIZE } = require("./defaults");
-const { getFileMimeType, makeUrl, walkDirectory, uriSkynetPrefix } = require("./utils");
+const { getFileMimeType, makeUrl, walkDirectory, uriSkynetPrefix, formatSkylink } = require("./utils");
+const { throwValidationError, validateInteger } = require("./utils_validation");
 
 /**
  * Uploads in-memory data to Skynet.
@@ -59,15 +60,62 @@ async function uploadSmallFile(client, stream, filename, opts) {
     params,
   });
 
-  const skylink = response.data.skylink;
-  return `${uriSkynetPrefix}${skylink}`;
+  const responsedSkylink = response.data.skylink;
+  // Format the skylink.
+  const skylink = formatSkylink(responsedSkylink);
+
+  return `${skylink}`;
 }
 
 async function uploadLargeFile(client, stream, filename, filesize, opts) {
-  const url = makeUrl(opts.portalUrl, opts.endpointLargeUpload);
+  // Validation.
+  if (
+    opts.staggerPercent !== undefined &&
+    opts.staggerPercent !== null &&
+    (opts.staggerPercent < 0 || opts.staggerPercent > 100)
+  ) {
+    throw new Error(`Expected 'staggerPercent' option to be between 0 and 100, was '${opts.staggerPercent}`);
+  }
+  if (opts.chunkSizeMultiplier < 1) {
+    throwValidationError("opts.chunkSizeMultiplier", opts.chunkSizeMultiplier, "option", "greater than or equal to 1");
+  }
+  // It's crucial that we only use strict multiples of the base chunk size.
+  validateInteger("opts.chunkSizeMultiplier", opts.chunkSizeMultiplier, "option");
+  if (opts.numParallelUploads < 1) {
+    throwValidationError("opts.numParallelUploads", opts.numParallelUploads, "option", "greater than or equal to 1");
+  }
+  validateInteger("opts.numParallelUploads", opts.numParallelUploads, "option");
 
+  const url = makeUrl(opts.portalUrl, opts.endpointLargeUpload);
   // Build headers.
   const headers = buildRequestHeaders({}, opts.customUserAgent, opts.customCookie);
+
+  // Set the number of parallel uploads as well as the part-split function. Note
+  // that each part has to be chunk-aligned, so we may limit the number of
+  // parallel uploads.
+  let parallelUploads = opts.numParallelUploads;
+  const chunkSize = TUS_CHUNK_SIZE * opts.chunkSizeMultiplier;
+  // If we use `parallelUploads: 1` then these have to be set to null.
+  //let splitSizeIntoParts: ((totalSize: number, partCount: number) => Array<{ start: number; end: number }>) | null = null;
+  let splitSizeIntoParts = null;
+  //let staggerPercent: number | null = null;
+  let staggerPercent = null;
+
+  // Limit the number of parallel uploads if some parts would end up empty,
+  // e.g. 50mib would be split into 1 chunk-aligned part, one unaligned part,
+  // and one empty part.
+  const numChunks = Math.ceil(filesize / TUS_CHUNK_SIZE);
+  if (parallelUploads > numChunks) {
+    parallelUploads = numChunks;
+  }
+
+  if (parallelUploads > 1) {
+    // Officially doing a parallel upload, set the parallel upload options.
+    splitSizeIntoParts = (totalSize, partCount) => {
+      splitSizeIntoChunkAlignedParts(totalSize, partCount, chunkSize);
+    };
+    staggerPercent = opts.staggerPercent;
+  }
 
   return new Promise((resolve, reject) => {
     const tusOpts = {
@@ -79,8 +127,11 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
         filetype: getFileMimeType(filename),
       },
       uploadSize: filesize,
+      parallelUploads,
+      staggerPercent,
+      splitSizeIntoParts,
       headers,
-      onError: (error) => {
+      onError: (error = Error | DetailedError) => {
         // Return error body rather than entire error.
         const res = error.originalResponse;
         const newError = res ? new Error(res.getBody().trim()) || error : error;
@@ -109,6 +160,54 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
     upload.start();
   });
 }
+
+const splitSizeIntoChunkAlignedParts = function (totalSize, partCount, chunkSize) {
+  if (partCount < 1) {
+    throwValidationError("partCount", partCount, "parameter", "greater than or equal to 1");
+  }
+  if (chunkSize < 1) {
+    throwValidationError("chunkSize", chunkSize, "parameter", "greater than or equal to 1");
+  }
+  // NOTE: Unexpected code flow. `uploadLargeFileRequest` should not enable
+  // parallel uploads for this case.
+  if (totalSize <= chunkSize) {
+    throwValidationError("totalSize", totalSize, "parameter", `greater than the size of a chunk ('${chunkSize}')`);
+  }
+
+  const partSizes = new Array(partCount).fill(0);
+
+  // Assign chunks to parts in order, looping back to the beginning if we get to
+  // the end of the parts array.
+  const numFullChunks = Math.floor(totalSize / chunkSize);
+  for (let i = 0; i < numFullChunks; i++) {
+    partSizes[i % partCount] += chunkSize;
+  }
+
+  // The leftover size that must go into the last part.
+  const leftover = totalSize % chunkSize;
+  // If there is non-chunk-aligned leftover, add it.
+  if (leftover > 0) {
+    // Assign the leftover to the part after the last part that was visited, or
+    // the last part in the array if all parts were used.
+    //
+    // NOTE: We don't need to worry about empty parts, tus ignores those.
+    const lastIndex = Math.min(numFullChunks, partCount - 1);
+    partSizes[lastIndex] += leftover;
+  }
+
+  // Convert sizes into parts.
+  const parts = [];
+  let lastBoundary = 0;
+  for (let i = 0; i < partCount; i++) {
+    parts.push({
+      start: lastBoundary,
+      end: lastBoundary + partSizes[i],
+    });
+    lastBoundary = parts[i].end;
+  }
+
+  return parts;
+};
 
 /**
  * Uploads a directory from the local filesystem to Skynet.

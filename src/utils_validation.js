@@ -87,10 +87,84 @@ const validateSkylinkString = function (name, value, valueKind) {
   return parsedSkylink;
 };
 
+/**
+ * Validates the given value as a number.
+ *
+ * @param name - The name of the value.
+ * @param value - The actual value.
+ * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
+ * @throws - Will throw if not a valid number.
+ */
+const validateNumber = function (name, value, valueKind) {
+  if (typeof value !== "number") {
+    throwValidationError(name, value, valueKind, "type 'number'");
+  }
+};
+
+/**
+ * Validates the given value as a integer.
+ *
+ * @param name - The name of the value.
+ * @param value - The actual value.
+ * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
+ * @throws - Will throw if not a valid integer.
+ */
+const validateInteger = function (name, value, valueKind) {
+  validateNumber(name, value, valueKind);
+  if (!Number.isInteger(value)) {
+    throwValidationError(name, value, valueKind, "an integer value");
+  }
+};
+
+/**
+ * Validates the given value as an object.
+ *
+ * @param name - The name of the value.
+ * @param value - The actual value.
+ * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
+ * @throws - Will throw if not a valid object.
+ */
+const validateObject = function (name, value, valueKind) {
+  if (typeof value !== "object") {
+    throwValidationError(name, value, valueKind, "type 'object'");
+  }
+  if (value === null) {
+    throwValidationError(name, value, valueKind, "non-null");
+  }
+};
+
+/**
+ * Validates the given value as an optional object.
+ *
+ * @param name - The name of the value.
+ * @param value - The actual value.
+ * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
+ * @param model - A model object that contains all possible fields. 'value' does not need to have all fields, but it may not have any fields not contained in 'model'.
+ * @throws - Will throw if not a valid optional object.
+ */
+const validateOptionalObject = function validateOptionalObject(name, value, valueKind, model) {
+  if (!value) {
+    // This is okay, the object is optional.
+    return;
+  }
+  validateObject(name, value, valueKind);
+
+  // Check if all given properties of value also exist in the model.
+  for (const property in value) {
+    if (!(property in model)) {
+      throw new Error(`Object ${valueKind} '${name}' contains unexpected property '${property}'`);
+    }
+  }
+};
+
 module.exports = {
   validationError,
   throwValidationError,
   validateString,
   validateStringLen,
   validateSkylinkString,
+  validateNumber,
+  validateInteger,
+  validateObject,
+  validateOptionalObject,
 };
