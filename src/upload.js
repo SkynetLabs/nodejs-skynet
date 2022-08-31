@@ -112,7 +112,7 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
   if (parallelUploads > 1) {
     // Officially doing a parallel upload, set the parallel upload options.
     splitSizeIntoParts = (totalSize, partCount) => {
-      splitSizeIntoChunkAlignedParts(totalSize, partCount, chunkSize);
+      return splitSizeIntoChunkAlignedParts(totalSize, partCount, chunkSize);
     };
     staggerPercent = opts.staggerPercent;
   }
@@ -120,13 +120,13 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
   return new Promise((resolve, reject) => {
     const tusOpts = {
       endpoint: url,
-      chunkSize: TUS_CHUNK_SIZE,
+      chunkSize: chunkSize,
       retryDelays: opts.retryDelays,
       metadata: {
         filename,
         filetype: getFileMimeType(filename),
       },
-      uploadSize: filesize,
+      //uploadSize: filesize,
       parallelUploads,
       staggerPercent,
       splitSizeIntoParts,
