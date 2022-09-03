@@ -68,6 +68,9 @@ async function uploadSmallFile(client, stream, filename, opts) {
 }
 
 async function uploadLargeFile(client, stream, filename, filesize, opts) {
+  let upload = null;
+  let uploadIsRunning = false;
+
   // Validation.
   if (
     opts.staggerPercent !== undefined &&
@@ -117,6 +120,28 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
     staggerPercent = opts.staggerPercent;
   }
 
+  const askToResumeUpload = function (previousUploads, currentUpload) {
+    if (previousUploads.length === 0) return;
+
+    let text = "You tried to upload this file previously at these times:\n\n";
+    previousUploads.forEach((previousUpload, index) => {
+      text += `[${index}] ${previousUpload.creationTime}\n`;
+    });
+    text += "\nEnter the corresponding number to resume an upload or press Cancel to start a new upload";
+
+    const answer = text + "yes";
+    const index = parseInt(answer, 10);
+
+    if (!Number.isNaN(index) && previousUploads[index]) {
+      currentUpload.resumeFromPreviousUpload(previousUploads[index]);
+    }
+  };
+
+  const reset = function () {
+    upload = null;
+    uploadIsRunning = false;
+  };
+
   return new Promise((resolve, reject) => {
     const tusOpts = {
       endpoint: url,
@@ -126,7 +151,6 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
         filename,
         filetype: getFileMimeType(filename),
       },
-      //uploadSize: filesize,
       parallelUploads,
       staggerPercent,
       splitSizeIntoParts,
@@ -135,6 +159,7 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
         // Return error body rather than entire error.
         const res = error.originalResponse;
         const newError = res ? new Error(res.getBody().trim()) || error : error;
+        reset();
         reject(newError);
       },
       onSuccess: async () => {
@@ -152,12 +177,19 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
           headers: { ...headers, "Tus-Resumable": "1.0.0" },
         });
         const skylink = resp.headers["skynet-skylink"];
+        reset();
         resolve(`${uriSkynetPrefix}${skylink}`);
       },
     };
 
-    const upload = new Upload(stream, tusOpts);
-    upload.start();
+    upload = new Upload(stream, tusOpts);
+    upload.findPreviousUploads().then((previousUploads) => {
+      askToResumeUpload(previousUploads, upload);
+
+      upload.start();
+      uploadIsRunning = true;
+      console.log(uploadIsRunning);
+    });
   });
 }
 
