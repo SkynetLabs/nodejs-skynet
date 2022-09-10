@@ -10,7 +10,7 @@ const TUS_CHUNK_SIZE = (1 << 22) * 10;
 /**
  * Indicates what the default chunk size multiplier is.
  */
-const DEFAULT_TUS_CHUNK_SIZE_MULTIPLIER = 2;
+const DEFAULT_TUS_CHUNK_SIZE_MULTIPLIER = 1;
 
 /**
  * Indicates how many parts should be uploaded in parallel, by default.

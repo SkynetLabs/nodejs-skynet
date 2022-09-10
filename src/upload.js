@@ -10,6 +10,7 @@ const { buildRequestHeaders, SkynetClient } = require("./client");
 const { DEFAULT_UPLOAD_OPTIONS, TUS_CHUNK_SIZE } = require("./defaults");
 const { getFileMimeType, makeUrl, walkDirectory, uriSkynetPrefix, formatSkylink } = require("./utils");
 const { throwValidationError, validateInteger } = require("./utils_validation");
+const { splitSizeIntoChunkAlignedParts } = require("./utils_testing");
 
 /**
  * Uploads in-memory data to Skynet.
@@ -188,58 +189,12 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
 
       upload.start();
       uploadIsRunning = true;
-      console.log(uploadIsRunning);
+      if (uploadIsRunning === false) {
+        console.log("Upload Is Running:  " + uploadIsRunning);
+      }
     });
   });
 }
-
-const splitSizeIntoChunkAlignedParts = function (totalSize, partCount, chunkSize) {
-  if (partCount < 1) {
-    throwValidationError("partCount", partCount, "parameter", "greater than or equal to 1");
-  }
-  if (chunkSize < 1) {
-    throwValidationError("chunkSize", chunkSize, "parameter", "greater than or equal to 1");
-  }
-  // NOTE: Unexpected code flow. `uploadLargeFileRequest` should not enable
-  // parallel uploads for this case.
-  if (totalSize <= chunkSize) {
-    throwValidationError("totalSize", totalSize, "parameter", `greater than the size of a chunk ('${chunkSize}')`);
-  }
-
-  const partSizes = new Array(partCount).fill(0);
-
-  // Assign chunks to parts in order, looping back to the beginning if we get to
-  // the end of the parts array.
-  const numFullChunks = Math.floor(totalSize / chunkSize);
-  for (let i = 0; i < numFullChunks; i++) {
-    partSizes[i % partCount] += chunkSize;
-  }
-
-  // The leftover size that must go into the last part.
-  const leftover = totalSize % chunkSize;
-  // If there is non-chunk-aligned leftover, add it.
-  if (leftover > 0) {
-    // Assign the leftover to the part after the last part that was visited, or
-    // the last part in the array if all parts were used.
-    //
-    // NOTE: We don't need to worry about empty parts, tus ignores those.
-    const lastIndex = Math.min(numFullChunks, partCount - 1);
-    partSizes[lastIndex] += leftover;
-  }
-
-  // Convert sizes into parts.
-  const parts = [];
-  let lastBoundary = 0;
-  for (let i = 0; i < partCount; i++) {
-    parts.push({
-      start: lastBoundary,
-      end: lastBoundary + partSizes[i],
-    });
-    lastBoundary = parts[i].end;
-  }
-
-  return parts;
-};
 
 /**
  * Uploads a directory from the local filesystem to Skynet.
