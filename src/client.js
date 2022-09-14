@@ -16,6 +16,7 @@ class SkynetClient {
    * @param {string} [customOptions.skynetApiKey] - Authentication API key to use for a Skynet portal (sets the "Skynet-Api-Key" header).
    * @param {string} [customCookie=""] - Custom cookie header to set.
    * @param {string} [customOptions.customUserAgent=""] - Custom user agent header to set.
+   * @param {Function} [customOptions.onUploadProgress] - Optional callback to track progress.
    */
   constructor(portalUrl, customOptions = {}) {
     // Check if portal URL provided twice.

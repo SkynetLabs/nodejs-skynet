@@ -143,6 +143,15 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
     uploadIsRunning = false;
   };
 
+  const onProgress =
+    opts.onUploadProgress &&
+    function (bytesSent, bytesTotal) {
+      const progress = bytesSent / bytesTotal;
+
+      // @ts-expect-error TS complains.
+      opts.onUploadProgress(progress, { loaded: bytesSent, total: bytesTotal });
+    };
+
   return new Promise((resolve, reject) => {
     const tusOpts = {
       endpoint: url,
@@ -156,6 +165,7 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
       staggerPercent,
       splitSizeIntoParts,
       headers,
+      onProgress,
       onError: (error = Error | DetailedError) => {
         // Return error body rather than entire error.
         const res = error.originalResponse;

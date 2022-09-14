@@ -64,7 +64,6 @@ const DEFAULT_UPLOAD_OPTIONS = {
   ...defaultOptions("/skynet/skyfile"),
   endpointLargeUpload: "/skynet/tus",
 
-  chunkSizeMultiplier: DEFAULT_TUS_CHUNK_SIZE_MULTIPLIER,
   portalFileFieldname: PORTAL_FILE_FIELD_NAME,
   portalDirectoryFileFieldname: PORTAL_DIRECTORY_FILE_FIELD_NAME,
   customFilename: "",
@@ -72,11 +71,14 @@ const DEFAULT_UPLOAD_OPTIONS = {
   disableDefaultPath: false,
   dryRun: false,
   errorPages: undefined,
+  tryFiles: undefined,
+
+  // Large files.
+  chunkSizeMultiplier: DEFAULT_TUS_CHUNK_SIZE_MULTIPLIER,
   largeFileSize: TUS_CHUNK_SIZE,
   numParallelUploads: DEFAULT_TUS_PARALLEL_UPLOADS,
   staggerPercent: DEFAULT_TUS_STAGGER_PERCENT,
   retryDelays: DEFAULT_TUS_RETRY_DELAYS,
-  tryFiles: undefined,
 };
 
 const DEFAULT_GET_ENTRY_OPTIONS = {
