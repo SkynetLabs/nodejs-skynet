@@ -165,7 +165,7 @@ describe("uploadFile", () => {
 
 describe("uploadLargeFile", () => {
   const file = tmp.fileSync({ postfix: ".txt" });
-  fs.writeFileSync(file.fd, Buffer.alloc(1024 * 1024 * 44).fill(0));
+  fs.writeFileSync(file.fd, Buffer.alloc(1024 * 1024 * 42 * 3).fill(0));
   const filename = file.name;
 
   it("should throw if the chunk size multiplier is less than 1", async () => {

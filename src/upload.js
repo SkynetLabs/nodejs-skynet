@@ -25,7 +25,7 @@ SkynetClient.prototype.uploadData = async function (data, filename, customOption
 
   const sizeInBytes = data.length;
 
-  if (sizeInBytes < opts.largeFileSize) {
+  if (sizeInBytes < opts.largeFileSize * opts.chunkSizeMultiplier) {
     return await uploadSmallFile(this, data, filename, opts);
   }
   return await uploadLargeFile(this, data, filename, sizeInBytes, opts);
@@ -39,7 +39,7 @@ SkynetClient.prototype.uploadFile = async function (path, customOptions = {}) {
   const filename = opts.customFilename ? opts.customFilename : p.basename(path);
   const stream = fs.createReadStream(path);
 
-  if (sizeInBytes < opts.largeFileSize) {
+  if (sizeInBytes < opts.largeFileSize * opts.chunkSizeMultiplier) {
     return await uploadSmallFile(this, stream, filename, opts);
   }
   return await uploadLargeFile(this, stream, filename, sizeInBytes, opts);
