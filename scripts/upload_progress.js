@@ -7,7 +7,8 @@
 const fs = require("fs");
 const process = require("process");
 
-const { SkynetClient, onUploadProgress } = require("..");
+const { SkynetClient } = require("..");
+const { onUploadProgress } = require("../src/utils_testing");
 
 const client = new SkynetClient("", { numParallelUploads: 2, onUploadProgress });
 

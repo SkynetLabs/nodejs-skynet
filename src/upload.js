@@ -100,9 +100,7 @@ async function uploadLargeFile(client, stream, filename, filesize, opts) {
   let parallelUploads = opts.numParallelUploads;
   const chunkSize = TUS_CHUNK_SIZE * opts.chunkSizeMultiplier;
   // If we use `parallelUploads: 1` then these have to be set to null.
-  //let splitSizeIntoParts: ((totalSize: number, partCount: number) => Array<{ start: number; end: number }>) | null = null;
   let splitSizeIntoParts = null;
-  //let staggerPercent: number | null = null;
   let staggerPercent = null;
 
   // Limit the number of parallel uploads if some parts would end up empty,

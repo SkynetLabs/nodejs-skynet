@@ -10,8 +10,6 @@ const {
   formatSkylink,
 } = require("./src/utils");
 
-const { onUploadProgress } = require("./src/utils_testing");
-
 const {
   genKeyPairAndSeed,
   genKeyPairFromSeed,
@@ -28,7 +26,6 @@ module.exports = {
   defaultSkynetPortalUrl,
   uriSkynetPrefix,
   formatSkylink,
-  onUploadProgress,
 
   // Re-export utilities from skynet-js.
 
