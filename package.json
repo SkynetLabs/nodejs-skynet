@@ -42,12 +42,13 @@
     "form-data": "4.0.0",
     "mime": "^3.0.0",
     "skynet-js": "^4.3.0",
-    "@skynetlabs/tus-js-client": "^2.4.1",
+    "@skynetlabs/tus-js-client": "^3.0.0",
     "url-join": "^4.0.1"
   },
   "devDependencies": {
     "axios-mock-adapter": "^1.20.0",
     "axios-retry": "^3.2.5",
+    "cli-progress": "^3.11.2",
     "eslint": "^8.0.0",
     "husky": "^8.0.1",
     "jest": "^29.0.1",

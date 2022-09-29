@@ -3,6 +3,8 @@ const fs = require("fs");
 const tmp = require("tmp");
 
 const { SkynetClient, defaultPortalUrl, uriSkynetPrefix } = require("../index");
+const { TUS_CHUNK_SIZE } = require("./defaults");
+const { splitSizeIntoChunkAlignedParts } = require("./utils_testing");
 
 jest.mock("axios");
 
@@ -158,6 +160,40 @@ describe("uploadFile", () => {
     const data = await client.uploadFile(filename, { dryRun: true });
 
     expect(data).toEqual(sialink);
+  });
+});
+
+describe("uploadLargeFile", () => {
+  const file = tmp.fileSync({ postfix: ".txt" });
+  fs.writeFileSync(file.fd, Buffer.alloc(1024 * 1024 * 42 * 3).fill(0));
+  const filename = file.name;
+
+  it("should throw if the chunk size multiplier is less than 1", async () => {
+    // @ts-expect-error Using protected method.
+    await expect(client.uploadFile(filename, { chunkSizeMultiplier: 0 })).rejects.toThrowError(
+      "Expected option 'opts.chunkSizeMultiplier' to be greater than or equal to 1, was type 'number', value '0'"
+    );
+  });
+
+  it("should throw if the chunk size multiplier is not an integer", async () => {
+    // @ts-expect-error Using protected method.
+    await expect(client.uploadFile(filename, { chunkSizeMultiplier: 1.5 })).rejects.toThrowError(
+      "Expected option 'opts.chunkSizeMultiplier' to be an integer value, was type 'number', value '1.5'"
+    );
+  });
+
+  it("should throw if the number of parallel uploads is less than 1", async () => {
+    // @ts-expect-error Using protected method.
+    await expect(client.uploadFile(filename, { numParallelUploads: 0.5 })).rejects.toThrowError(
+      "Expected option 'opts.numParallelUploads' to be greater than or equal to 1, was type 'number', value '0.5'"
+    );
+  });
+
+  it("should throw if the number of parallel uploads is not an integer", async () => {
+    // @ts-expect-error Using protected method.
+    await expect(client.uploadFile(filename, { numParallelUploads: 1.5 })).rejects.toThrowError(
+      "Expected option 'opts.numParallelUploads' to be an integer value, was type 'number', value '1.5'"
+    );
   });
 });
 
@@ -319,5 +355,150 @@ describe("uploadData", () => {
     );
 
     expect(receivedSkylink).toEqual(`sia://${skylink}`);
+  });
+});
+
+describe("splitSizeIntoChunkAlignedParts", () => {
+  const mib = 1 << 20;
+  const chunk = TUS_CHUNK_SIZE;
+  const cases = [
+    [
+      41 * mib,
+      2,
+      chunk,
+      [
+        { start: 0, end: 40 * mib },
+        { start: 40 * mib, end: 41 * mib },
+      ],
+    ],
+    [
+      80 * mib,
+      2,
+      chunk,
+      [
+        { start: 0, end: 40 * mib },
+        { start: 40 * mib, end: 80 * mib },
+      ],
+    ],
+    [
+      50 * mib,
+      2,
+      chunk,
+      [
+        { start: 0, end: 40 * mib },
+        { start: 40 * mib, end: 50 * mib },
+      ],
+    ],
+    [
+      100 * mib,
+      2,
+      chunk,
+      [
+        { start: 0, end: 40 * mib },
+        { start: 40 * mib, end: 100 * mib },
+      ],
+    ],
+    [
+      50 * mib,
+      3,
+      chunk,
+      [
+        { start: 0, end: 40 * mib },
+        { start: 40 * mib, end: 50 * mib },
+        { start: 50 * mib, end: 50 * mib },
+      ],
+    ],
+    [
+      100 * mib,
+      3,
+      chunk,
+      [
+        { start: 0, end: 40 * mib },
+        { start: 40 * mib, end: 80 * mib },
+        { start: 80 * mib, end: 100 * mib },
+      ],
+    ],
+    [
+      500 * mib,
+      6,
+      chunk,
+      [
+        { start: 0 * mib, end: 80 * mib },
+        { start: 80 * mib, end: 160 * mib },
+        { start: 160 * mib, end: 240 * mib },
+        { start: 240 * mib, end: 320 * mib },
+        { start: 320 * mib, end: 400 * mib },
+        { start: 400 * mib, end: 500 * mib },
+      ],
+    ],
+
+    // Use larger chunk size.
+    [
+      81 * mib,
+      2,
+      chunk * 2,
+      [
+        { start: 0, end: 80 * mib },
+        { start: 80 * mib, end: 81 * mib },
+      ],
+    ],
+    [
+      121 * mib,
+      2,
+      chunk * 3,
+      [
+        { start: 0, end: 120 * mib },
+        { start: 120 * mib, end: 121 * mib },
+      ],
+    ],
+    [
+      121 * mib,
+      3,
+      chunk * 3,
+      [
+        { start: 0, end: 120 * mib },
+        { start: 120 * mib, end: 121 * mib },
+        { start: 121 * mib, end: 121 * mib },
+      ],
+    ],
+  ];
+
+  it.each(cases)(
+    "(totalSize: '%s', partCount: '%s', chunkSize: '%s') should result in '%s'",
+    (totalSize, partCount, chunkSize, expectedParts) => {
+      const parts = splitSizeIntoChunkAlignedParts(totalSize, partCount, chunkSize);
+      expect(parts).toEqual(expectedParts);
+    }
+  );
+
+  const sizeTooSmallCases = [
+    [40 * mib, 2, chunk * 2],
+    [41 * mib, 2, chunk * 2],
+    [40 * mib, 3, chunk * 3],
+    [80 * mib, 2, chunk * 2],
+    [40 * mib, 2, chunk],
+    [40 * mib, 3, chunk],
+    [0, 2, chunk],
+  ];
+
+  it.each(sizeTooSmallCases)(
+    "(totalSize: '%s', partCount: '%s', chunkSize: '%s') should throw",
+    (totalSize, partCount, chunkSize) => {
+      expect(() => splitSizeIntoChunkAlignedParts(totalSize, partCount, chunkSize)).toThrowError(
+        `Expected parameter 'totalSize' to be greater than the size of a chunk ('${chunkSize}'), was type 'number', value '${totalSize}'`
+      );
+    }
+  );
+
+  it("should throw if the partCount is 0", () => {
+    expect(() => splitSizeIntoChunkAlignedParts(1, 0, 1)).toThrowError(
+      "Expected parameter 'partCount' to be greater than or equal to 1, was type 'number', value '0'"
+    );
+  });
+
+  it("should throw if the chunkSize is 0", () => {
+    expect(() => splitSizeIntoChunkAlignedParts(1, 1, 0)).toThrowError(
+      "Expected parameter 'chunkSize' to be greater than or equal to 1, was type 'number', value '0'"
+    );
   });
 });

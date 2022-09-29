@@ -32,6 +32,7 @@ function defaultOptions(endpointPath) {
     APIKey: "",
     skynetApiKey: "",
     customUserAgent: "",
+    onUploadProgress: undefined,
   };
 }
 
