@@ -3,6 +3,33 @@
 const { parseSkylink } = require("skynet-js");
 
 /**
+ * Returns true if the input is a valid hex-encoded string.
+ *
+ * @param str - The input string.
+ * @returns - True if the input is hex-encoded.
+ * @throws - Will throw if the input is not a string.
+ */
+const isHexString = function (str) {
+  validateString("str", str, "parameter");
+
+  return /^[0-9A-Fa-f]*$/g.test(str);
+};
+
+/**
+ * Validates the given value as a bigint.
+ *
+ * @param name - The name of the value.
+ * @param value - The actual value.
+ * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
+ * @throws - Will throw if not a valid bigint.
+ */
+const validateBigint = function (name, value, valueKind) {
+  if (typeof value !== "bigint") {
+    throwValidationError(name, value, valueKind, "type 'bigint'");
+  }
+};
+
+/**
  * Returns an error for the given value
  *
  * @param name - The name of the value.
@@ -64,6 +91,21 @@ const validateStringLen = function (name, value, valueKind, len) {
   const actualLen = value.length;
   if (actualLen !== len) {
     throwValidationError(name, value, valueKind, `type 'string' of length ${len}, was length ${actualLen}`);
+  }
+};
+
+/**
+ * Validates the given value as a hex-encoded string.
+ *
+ * @param name - The name of the value.
+ * @param value - The actual value.
+ * @param valueKind - The kind of value that is being checked (e.g. "parameter", "response field", etc.)
+ * @throws - Will throw if not a valid hex-encoded string.
+ */
+const validateHexString = function (name, value, valueKind) {
+  validateString(name, value, valueKind);
+  if (!isHexString(value)) {
+    throwValidationError(name, value, valueKind, "a hex-encoded string");
   }
 };
 
@@ -158,10 +200,13 @@ const validateOptionalObject = function validateOptionalObject(name, value, valu
 };
 
 module.exports = {
+  isHexString,
+  validateBigint,
   validationError,
   throwValidationError,
   validateString,
   validateStringLen,
+  validateHexString,
   validateSkylinkString,
   validateNumber,
   validateInteger,

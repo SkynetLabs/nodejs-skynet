@@ -1,7 +1,7 @@
 "use strict";
 
 const { uriSkynetPrefix } = require("skynet-js");
-const { validateString } = require("./utils_validation");
+const { validateHexString, validationError } = require("./utils_validation");
 
 /**
  * Removes a prefix from the beginning of the string.
@@ -87,16 +87,21 @@ function trimSiaPrefix(str) {
 }
 
 /**
- * Returns true if the input is a valid hex-encoded string.
+ * Converts a hex encoded string to a uint8 array.
  *
- * @param str - The input string.
- * @returns - True if the input is hex-encoded.
- * @throws - Will throw if the input is not a string.
+ * @param str - The string to convert.
+ * @returns - The uint8 array.
+ * @throws - Will throw if the input is not a valid hex-encoded string or is an empty string.
  */
-const isHexString = function (str) {
-  validateString("str", str, "parameter");
+const hexToUint8Array = function (str) {
+  validateHexString("str", str, "parameter");
 
-  return /^[0-9A-Fa-f]*$/g.test(str);
+  const matches = str.match(/.{1,2}/g);
+  if (matches === null) {
+    throw validationError("str", str, "parameter", "a hex-encoded string");
+  }
+
+  return new Uint8Array(matches.map((byte) => parseInt(byte, 16)));
 };
 
 /**
@@ -120,6 +125,6 @@ module.exports = {
   trimForwardSlash,
   trimUriPrefix,
   trimSiaPrefix,
-  isHexString,
+  hexToUint8Array,
   toHexString,
 };

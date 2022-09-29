@@ -1,10 +1,11 @@
 "use strict";
 
-const { fromByteArray, toByteArray } = require("base64-js");
 const base32Decode = require("base32-decode");
 const base32Encode = require("base32-encode");
+const { fromByteArray, toByteArray } = require("base64-js");
 
-const { URI_SKYNET_PREFIX } = require("skynet-js");
+const { assertUint64 } = require("./utils_number");
+const { URI_SKYNET_PREFIX, stringToUint8ArrayUtf8 } = require("skynet-js");
 const {
   RAW_SKYLINK_SIZE,
   BASE32_ENCODED_SKYLINK_SIZE,
@@ -101,10 +102,83 @@ const decodeSkylink = function (encoded) {
   return bytes;
 };
 
+/**
+ * Converts the given number into a uint8 array. Uses little-endian encoding.
+ *
+ * @param num - Number to encode.
+ * @returns - Number encoded as a byte array.
+ */
+const encodeNumber = function (num) {
+  const encoded = new Uint8Array(8);
+  for (let index = 0; index < encoded.length; index++) {
+    const byte = num & 0xff;
+    encoded[index] = byte;
+    num = num >> 8;
+  }
+  return encoded;
+};
+
+/**
+ * Encodes the given bigint into a uint8 array. Uses little-endian encoding.
+ *
+ * @param int - Bigint to encode.
+ * @returns - Bigint encoded as a byte array.
+ * @throws - Will throw if the int does not fit in 64 bits.
+ */
+const encodeBigintAsUint64 = function (int) {
+  // Assert the input is 64 bits.
+  assertUint64(int);
+
+  const encoded = new Uint8Array(8);
+  for (let index = 0; index < encoded.length; index++) {
+    const byte = int & BigInt(0xff);
+    encoded[index] = Number(byte);
+    int = int >> BigInt(8);
+  }
+  return encoded;
+};
+
+/**
+ * Encodes the uint8array, prefixed by its length.
+ *
+ * @param bytes - The input array.
+ * @returns - The encoded byte array.
+ */
+const encodePrefixedBytes = function (bytes) {
+  const len = bytes.length;
+  const buf = new ArrayBuffer(8 + len);
+  const view = new DataView(buf);
+
+  // Sia uses setUint64 which is unavailable in JS.
+  view.setUint32(0, len, true);
+  const uint8Bytes = new Uint8Array(buf);
+  uint8Bytes.set(bytes, 8);
+
+  return uint8Bytes;
+};
+
+/**
+ * Encodes the given UTF-8 string into a uint8 array containing the string length and the string.
+ *
+ * @param str - String to encode.
+ * @returns - String encoded as a byte array.
+ */
+const encodeUtf8String = function (str) {
+  const byteArray = stringToUint8ArrayUtf8(str);
+  const encoded = new Uint8Array(8 + byteArray.length);
+  encoded.set(encodeNumber(byteArray.length));
+  encoded.set(byteArray, 8);
+  return encoded;
+};
+
 module.exports = {
   decodeSkylinkBase32,
   encodeSkylinkBase32,
   decodeSkylinkBase64,
   encodeSkylinkBase64,
   decodeSkylink,
+  encodeNumber,
+  encodeBigintAsUint64,
+  encodePrefixedBytes,
+  encodeUtf8String,
 };

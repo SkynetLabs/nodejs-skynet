@@ -9,6 +9,17 @@ let fileSizeCounter = 0;
 let endProgressCounter = 0;
 
 /**
+ * Returns an array of strings of all possible permutations by picking one
+ * string out of each of the input string arrays.
+ *
+ * @param arrays - Array of string arrays.
+ * @returns - Array of strings of all possible permutations.
+ */
+const combineStrings = function (...arrays) {
+  return arrays.reduce((acc, array) => acc.flatMap((first) => array.map((second) => first.concat(second))));
+};
+
+/**
  * Extracts the non-skylink part of the path from the url.
  *
  * @param url - The input URL.
@@ -139,6 +150,7 @@ const onUploadProgress = (progress, { loaded, total }) => {
 };
 
 module.exports = {
+  combineStrings,
   extractNonSkylinkPath,
   getSettledValues,
   splitSizeIntoChunkAlignedParts,
